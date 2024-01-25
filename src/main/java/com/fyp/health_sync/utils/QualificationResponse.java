@@ -19,6 +19,7 @@ public class QualificationResponse {
     private String institute;
     private String passOutYear;
     private String certificate;
+    private DoctorResponse doctor;
 
     public QualificationResponse castToResponse(Qualifications qualification) {
         if (qualification == null) {
@@ -30,6 +31,7 @@ public class QualificationResponse {
                 .institute(qualification.getInstitute())
                 .passOutYear(qualification.getPassOutYear().toString())
                 .certificate(qualification.getCertificate() != null ? "certificate/"+qualification.getId() : null)
+                .doctor(qualification.getDoctor() != null ? new DoctorResponse().castToResponse(qualification.getDoctor()) : null)
                 .build();
     }
 }

@@ -33,7 +33,7 @@ public class UserController {
 
     @SecurityRequirement(name = "BearerAuth")
     @PutMapping("/current-user")
-    public ResponseEntity<?> updateUser(@RequestBody @Valid UpdateUserDto user) throws BadRequestException, InternalServerErrorException, IOException {
+    public ResponseEntity<?> updateUser(@RequestBody @Valid @ModelAttribute UpdateUserDto user) throws BadRequestException, InternalServerErrorException, IOException {
         return userService.updateUser(user);
     }
 
@@ -50,12 +50,7 @@ public class UserController {
         return userService.uploadDetails(userId, details);
     }
 
-    @Operation(summary = "Get doctor details by doctorId for users")
-    @SecurityRequirement(name = "BearerAuth")
-    @GetMapping("/user-details/{userId}")
-    public ResponseEntity<?> getDoctorDetails(@PathVariable UUID userId) throws BadRequestException, InternalServerErrorException {
-        return userService.getUserDetails(userId);
-    }
+
 
 
 }

@@ -27,7 +27,6 @@ public class RegisterUserDto {
     private String email;
 
     @NotNull(message = "Role is cannot be empty")
-    @EnumValidator(enumClass = UserRole.class, message = "Role must be either DOCTOR or USER")
     @Enumerated(EnumType.STRING)
     private UserRole role;
 

@@ -40,6 +40,8 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/v1/qualification/add-khaltiId/**"),
                                 new AntPathRequestMatcher("/api/v1/qualification/**"),
                                 new AntPathRequestMatcher("/api/v1/speciality/**"),
+                                new AntPathRequestMatcher("/api/v1/user/upload-address/**"),
+                                new AntPathRequestMatcher("/api/v1/user/upload-details/**"),
                                 new AntPathRequestMatcher("/socket/**"),
                                 new AntPathRequestMatcher("/app/**")
                         ).permitAll()

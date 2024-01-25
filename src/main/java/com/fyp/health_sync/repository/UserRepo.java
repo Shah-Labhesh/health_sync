@@ -4,6 +4,8 @@ import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,6 +19,10 @@ public interface UserRepo extends JpaRepository<Users, UUID> {
 
     Optional<Users> findById(UUID id);
 
+    @Query("SELECT u FROM Users u WHERE " +
+            "(6371 * acos(cos(radians(:latitude)) * cos(radians(u.latitude)) * cos(radians(u.longitude) - radians(:longitude)) + " +
+            "sin(radians(:latitude)) * sin(radians(u.latitude)))) < :radius")
+    List<Users> findNearbyUsers(@Param("latitude") double latitude, @Param("longitude") double longitude, @Param("radius") double radius);
 
     List<Users> findAllByIdAndRole(UUID id, UserRole role);
     List<Users> findAllByStatusAndRole(UserStatus userStatus, UserRole role);

@@ -20,10 +20,23 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/doctor")
+@SecurityRequirement(name = "BearerAuth")
 @RequiredArgsConstructor
 public class DoctorController {
 
     private final DoctorService doctorService;
+
+    @Operation(summary = "Get nearby doctors")
+    @GetMapping("/nearby-doctors/{latitude}/{longitude}")
+    public ResponseEntity<?> getNearbyDoctors(@PathVariable double latitude, @PathVariable double longitude) throws BadRequestException {
+        return doctorService.getNearbyDoctors(latitude, longitude);
+    }
+
+    @Operation(summary = "toggle favorite")
+    @GetMapping("/toggle-favorite/{doctorId}")
+    public ResponseEntity<?> toggleFavorite(@PathVariable UUID doctorId) throws BadRequestException {
+        return doctorService.toggleFavorite(doctorId);
+    }
 
 //    @SecurityRequirement(name = "BearerAuth")
 //    @GetMapping("/current-doctor")

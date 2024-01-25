@@ -33,7 +33,7 @@ public class Appointments {
     private Users doctor;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user", referencedColumnName = "id")
+    @JoinColumn(name = "\"user\"", referencedColumnName = "id")
     private Users user;
     private String appointmentType;
     @OneToOne (fetch = FetchType.LAZY)

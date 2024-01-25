@@ -11,8 +11,10 @@ import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.UserRepo;
+import com.fyp.health_sync.utils.DoctorResponse;
 import com.fyp.health_sync.utils.LoginResponse;
 import com.fyp.health_sync.utils.SuccessResponse;
+import com.fyp.health_sync.utils.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +54,7 @@ public class AuthService implements UserDetailsService {
         return authType == AuthType.Google || authType == AuthType.Twitter;
     }
 
-    public void registerUser(RegisterUserDto userDetails) {
+    public ResponseEntity<?> registerUser(RegisterUserDto userDetails) {
         Users user = userRepo.findByEmail(userDetails.getEmail());
         if (user != null) {
             if (user.getStatus() == UserStatus.DELETED) {
@@ -71,11 +73,20 @@ public class AuthService implements UserDetailsService {
                 .password(userDetails.getPassword())
                 .createdAt(LocalDateTime.now())
                 .isVerified(false)
+                .approved(false)
                 .status(UserStatus.ACTIVE)
                 .role(userDetails.getRole())
                 .authType(AuthType.Traditional)
                 .build();
         userRepo.save(newUser);
+
+        Users newUserDetails = userRepo.findByEmail(userDetails.getEmail());
+
+        if (userDetails.getRole() == UserRole.USER) {
+            return ResponseEntity.created(null).body(new UserResponse().castToResponse(newUserDetails));
+        } else {
+            return ResponseEntity.created(null).body(new DoctorResponse().castToResponse(newUserDetails));
+        }
     }
 
     public ResponseEntity<?> performLogin(LoginDto credentials) throws BadRequestException {

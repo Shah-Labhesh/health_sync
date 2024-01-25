@@ -56,18 +56,6 @@ public class UserService {
 
     }
 
-    public ResponseEntity<?> getUserDetails(UUID id) throws BadRequestException, InternalServerErrorException {
-        try{
-            Users user = userRepo.findById(id).orElseThrow(() -> new BadRequestException("User not found"));
-            if (user.getRole() == UserRole.DOCTOR){
-                return ResponseEntity.ok(new DoctorResponse().castToResponse(user));
-            }else{
-                return ResponseEntity.ok(new UserResponse().castToResponse(user));
-            }
-        } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-    }
 
     public ResponseEntity<?> uploadAddress(UUID id, UploadAddressDto address) throws BadRequestException, JsonProcessingException, InternalServerErrorException {
        try {

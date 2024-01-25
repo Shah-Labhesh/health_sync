@@ -55,7 +55,7 @@ public class QualificationService {
                     .doctor(doctor)
                     .build();
             qualificationRepo.save(qualifications);
-            return ResponseEntity.created(null).body(new SuccessResponse("Qualification added successfully"));
+            return ResponseEntity.created(null).body(new QualificationResponse().castToResponse(qualifications));
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }

@@ -70,6 +70,7 @@ public class SpecialityService {
         try{
             Speciality speciality1 = specialityRepo.findById(specialityId).orElseThrow(() -> new BadRequestException("Speciality not found"));
             speciality1.setDeletedAt(LocalDateTime.now());
+            specialityRepo.save(speciality1);
             return ResponseEntity.ok(new SuccessResponse("Speciality deleted successfully"));
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());

@@ -17,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class AddDoctorDetailsDto {
 
-    @NotBlank(message = "speciality cannot be empty")
+    @NotNull(message = "speciality cannot be empty")
     private UUID speciality;
     @NotBlank(message = "Experience cannot be empty")
     @Size(min = 10, max = 250, message = "Experience must be between 10 and 250 digits")

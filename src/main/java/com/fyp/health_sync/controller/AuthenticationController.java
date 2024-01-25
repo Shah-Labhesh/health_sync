@@ -32,8 +32,7 @@ public class AuthenticationController {
     @Operation(summary = "Register User traditionally")
     @PostMapping("/register-user")
     public ResponseEntity<?> registerUser(@RequestBody @Valid RegisterUserDto userDetails) {
-        authService.registerUser(userDetails);
-        return ResponseEntity.created(null).body(new SuccessResponse("User registered successfully"));
+        return  authService.registerUser(userDetails);
     }
 
     @Operation(summary = "Login User & Doctor traditionally")
