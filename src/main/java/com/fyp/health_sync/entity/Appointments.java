@@ -26,24 +26,24 @@ public class Appointments {
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(updatable = false, nullable = false)
-    private UUID appointmentId;
+    private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "doctorId", referencedColumnName = "id")
-    private Doctors doctorId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor", referencedColumnName = "id")
+    private Users doctor;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "userId", referencedColumnName = "id")
-    private Users UserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user", referencedColumnName = "id")
+    private Users user;
     private String appointmentType;
-    @OneToOne (fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "slotId", referencedColumnName = "slotId")
-    private Slots slotId;
+    @OneToOne (fetch = FetchType.LAZY)
+    @JoinColumn(name = "slot", referencedColumnName = "id")
+    private Slots slot;
     private String notes;
 
-    @OneToOne (fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "paymentId", referencedColumnName = "id")
-    private Payment paymentId;
+    @OneToOne (fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment", referencedColumnName = "id")
+    private Payment payment;
     @Enumerated (EnumType.STRING)
     private PaymentStatus paymentStatus;
     private LocalDateTime createdAt;

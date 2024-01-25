@@ -30,4 +30,8 @@ public class OTPs {
     private LocalDateTime expiresAt;
     private Boolean isExpired;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user", referencedColumnName = "id")
+    private Users user;
+
 }

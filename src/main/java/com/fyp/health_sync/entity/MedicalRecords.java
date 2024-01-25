@@ -37,11 +37,11 @@ public class MedicalRecords {
     private LocalDateTime deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user", referencedColumnName = "id")
     private Users user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id", referencedColumnName = "id")
-    private Doctors doctor;
+    @JoinColumn(name = "doctor", referencedColumnName = "id")
+    private Users doctor;
 
 }

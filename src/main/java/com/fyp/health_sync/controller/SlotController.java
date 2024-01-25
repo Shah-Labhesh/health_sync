@@ -40,12 +40,12 @@ public class SlotController {
 
 
     @GetMapping("my-slots")
-    public ResponseEntity<?> getMySlots() throws BadRequestException {
+    public ResponseEntity<?> getMySlots() throws BadRequestException, ForbiddenException {
         return slotService.getMySlots();
     }
 
     @GetMapping("doctor-slots/{doctorId}")
-    public ResponseEntity<?> getDoctorSlots(@PathVariable UUID doctorId) throws BadRequestException {
+    public ResponseEntity<?> getDoctorSlots(@PathVariable UUID doctorId) throws BadRequestException, ForbiddenException {
         return slotService.getDoctorSlots(doctorId);
     }
 

@@ -1,7 +1,8 @@
 package com.fyp.health_sync.controller;
 
-import com.fyp.health_sync.entity.ChatNotification;
 import com.fyp.health_sync.entity.Message;
+import com.fyp.health_sync.entity.Notification;
+import com.fyp.health_sync.enums.NotificationType;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.service.ChatRoomService;
 import com.fyp.health_sync.service.MessageService;
@@ -13,7 +14,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -48,11 +48,13 @@ public class ChatController {
     @MessageMapping("/chat")
     public void processMessage(@Payload UUID roomId, @Payload String message) throws BadRequestException {
         Message message1 = messageService.createMessage(roomId, message);
-        messagingTemplate.convertAndSend("/topic/" + roomId, ChatNotification.builder()
-                .message(message1.getMessage())
-                .senderId(message1.getSenderId())
-                .receiverId(message1.getReceiverId())
-                .chatId(message1.getId())
+        messagingTemplate.convertAndSend("/topic/" + roomId, Notification.builder()
+                .body("You have a new message")
+                        .title("New Message")
+                .chatRoomId(roomId)
+                        .createdAt(message1.getCreatedAt())
+                        .isRead(false)
+                        .type(NotificationType.CHAT)
                 .build());
     }
 }

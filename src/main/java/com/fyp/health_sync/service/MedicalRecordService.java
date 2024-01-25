@@ -2,17 +2,17 @@ package com.fyp.health_sync.service;
 
 import com.fyp.health_sync.dtos.AddMedicalRecordDto;
 import com.fyp.health_sync.dtos.UpdateMedicalRecordDto;
-import com.fyp.health_sync.entity.Doctors;
 import com.fyp.health_sync.entity.MedicalRecords;
 import com.fyp.health_sync.entity.ShareMedicalRecords;
 import com.fyp.health_sync.entity.Users;
+import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
-import com.fyp.health_sync.repository.DoctorRepo;
 import com.fyp.health_sync.repository.MedicalRecordRepo;
 import com.fyp.health_sync.repository.ShareRecordRepo;
 import com.fyp.health_sync.repository.UserRepo;
+import com.fyp.health_sync.utils.ImageUtils;
 import com.fyp.health_sync.utils.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +31,6 @@ public class MedicalRecordService {
 
     private final MedicalRecordRepo medicalRecordRepo;
     private final UserRepo userRepo;
-    private final DoctorRepo doctorRepo;
     private final ShareRecordRepo shareRecordRepo;
 
     public ResponseEntity<?> uploadRecord(AddMedicalRecordDto recordDto) throws BadRequestException, IOException, InternalServerErrorException {
@@ -62,14 +61,17 @@ public class MedicalRecordService {
         try{
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-            Doctors doctor = doctorRepo.findByEmail(email);
+            Users doctor = userRepo.findByEmail(email);
             if (doctor == null) {
                 throw  new BadRequestException("Doctor not found");
+            }
+            if (doctor.getRole() != UserRole.DOCTOR){
+                throw new BadRequestException("You are not authorized to add record");
             }
             Users patient = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
             MedicalRecords medicalRecords = MedicalRecords.builder()
                     .recordType(recordDto.getRecordType())
-                    .record(recordDto.getRecord().getBytes())
+                    .record(ImageUtils.compressImage(recordDto.getRecord().getBytes()))
                     .recordText(recordDto.getRecordText())
                     .selfAdded(false)
                     .user(patient)
@@ -183,14 +185,14 @@ public class MedicalRecordService {
         if(!records.get().getUser().getId().equals(user.getId())) {
             throw new ForbiddenException("You are not authorized to share this record");
         }
-        Optional<Doctors> doctor = doctorRepo.findById(doctorId);
-        if (doctor.isEmpty()) {
+        Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        if (doctor.getRole() != UserRole.DOCTOR) {
             throw new BadRequestException("Doctor not found");
         }
         try{
             ShareMedicalRecords shareMedicalRecords = ShareMedicalRecords.builder()
                     .medicalRecords(records.get())
-                    .doctor(doctor.get())
+                    .doctor(doctor)
                     .user(user)
                     .createdAt(LocalDateTime.now())
                     .build();

@@ -32,7 +32,7 @@ public class Qualifications {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id", referencedColumnName = "id")
-    private Doctors doctorId;
+    @JoinColumn(name = "doctor", referencedColumnName = "id")
+    private Users doctor;
 
 }

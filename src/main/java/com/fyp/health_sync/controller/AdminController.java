@@ -27,7 +27,7 @@ public class AdminController {
     private final SpecialityService specialityService;
 
     @Operation(summary = "Update approved status of doctor")
-    @PutMapping("/approved-status/{doctorId}/{status}")
+    @PutMapping("/approve-status/{doctorId}/{status}")
     public ResponseEntity<?> updateApprovedStatus(@PathVariable UUID doctorId, @PathVariable Boolean status) throws BadRequestException, InternalServerErrorException {
         return adminService.updateApprovedStatus(doctorId, status);
     }
@@ -38,29 +38,13 @@ public class AdminController {
         return adminService.updatePopularStatus(doctorId, status);
     }
 
-//    @Operation(summary = "Get all users")
-//    @GetMapping("/all-users")
-//    public ResponseEntity<?> getAllUser() throws InternalServerErrorException {
-//        return adminService.getAllUser();
-//    }
-//
-//    @Operation(summary = "Get all doctors")
-//    @GetMapping("/all-doctors")
-//    public ResponseEntity<?> getAllDoctors() throws InternalServerErrorException {
-//        return adminService.getAllDoctors();
-//    }
-
     @Operation(summary = "soft user delete")
     @PutMapping("/user-status/{userId}")
     public ResponseEntity<?> changeUserStatus(@PathVariable UUID userId, @RequestParam(required = true) UserStatus status) throws BadRequestException, InternalServerErrorException {
-        return adminService.changeUserStatus(userId, status);
+        return adminService.changeAccountStatus(userId, status);
     }
 
-    @Operation(summary = "soft doctor delete")
-    @PutMapping("/doctor-status/{doctorId}")
-    public ResponseEntity<?> changeDoctorStatus(@PathVariable UUID doctorId, @RequestParam(required = true) UserStatus status) throws BadRequestException, InternalServerErrorException {
-        return adminService.changeDoctorStatus(doctorId, status);
-    }
+
 
     @Operation(summary = "delete user permanently")
     @DeleteMapping("/{userId}")
@@ -68,11 +52,6 @@ public class AdminController {
         return adminService.deleteUser(userId);
     }
 
-    @Operation(summary = "delete doctor permanently")
-    @DeleteMapping("/{doctorId}")
-    public ResponseEntity<?> deleteDoctorPermanently(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException {
-        return adminService.deleteDoctor(doctorId);
-    }
 
     @Operation(summary = "restore user from soft delete")
     @PutMapping("/restore/{userId}")
@@ -80,36 +59,19 @@ public class AdminController {
         return adminService.restoreUser(userId);
     }
 
-    @Operation(summary = "restore doctor from soft delete")
-    @PutMapping("/restore/{doctorId}")
-    public ResponseEntity<?> restoreDoctor(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException {
-        return adminService.restoreDoctor(doctorId);
-    }
+
 
     @Operation(summary = "manage user")
     @GetMapping("/manage-user")
-    public ResponseEntity<?> manageUser(@RequestParam(required = false, defaultValue = "ACTIVE") UserStatus status) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> manageUser(@RequestParam(required = false, defaultValue = "ACTIVE") UserStatus status) throws InternalServerErrorException {
         return adminService.manageUser(status);
     }
 
     @Operation(summary = "manage Doctor")
     @GetMapping("/manage-doctor")
-    public ResponseEntity<?> manageDoctor(@RequestParam(required = false, defaultValue = "ACTIVE") UserStatus status) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> manageDoctor(@RequestParam(required = false, defaultValue = "ACTIVE") UserStatus status) throws InternalServerErrorException {
         return adminService.manageDoctor(status);
     }
-
-
-//    @Operation(summary = "get all soft deleted users")
-//    @GetMapping("/user-trash")
-//    public ResponseEntity<?> getAllSoftDeletedUsers() throws InternalServerErrorException {
-//        return adminService.getAllSoftDeletedUsers();
-//    }
-//
-//    @Operation(summary = "get all soft deleted doctors")
-//    @GetMapping("/doctor-trash")
-//    public ResponseEntity<?> getAllSoftDeletedDoctors() throws InternalServerErrorException {
-//        return adminService.getAllSoftDeletedDoctors();
-//    }
 
     @Operation(summary = "get Dashboard data")
     @GetMapping("/dashboard")

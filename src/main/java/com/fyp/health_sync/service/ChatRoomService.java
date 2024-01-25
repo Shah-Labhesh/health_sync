@@ -2,11 +2,9 @@ package com.fyp.health_sync.service;
 
 
 import com.fyp.health_sync.entity.ChatRoom;
-import com.fyp.health_sync.entity.Doctors;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.repository.ChatRoomRepo;
-import com.fyp.health_sync.repository.DoctorRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,6 @@ public class ChatRoomService {
 
     private final ChatRoomRepo chatRoomRepo;
     private final UserRepo userRepo;
-    private final DoctorRepo doctorRepo;
 
 
     public ResponseEntity<?> createChatRoom(UUID doctorId) throws BadRequestException {
@@ -31,12 +28,12 @@ public class ChatRoomService {
         Users users = userRepo.findByEmail(user);
 
         if (users != null) {
-            ChatRoom chatRoom = chatRoomRepo.findByUserIdAndDoctorId(users, doctorId);
+            ChatRoom chatRoom = chatRoomRepo.findByUserIdAndDoctorId(users.getId(), doctorId);
             if (chatRoom != null) {
                 return ResponseEntity.ok(chatRoom);
             }
             ChatRoom newChatRoom = ChatRoom.builder()
-                    .doctor(doctorRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found")))
+                    .doctor(userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found")))
                     .user(users)
                     .createdAt(LocalDateTime.now())
                     .build();
@@ -58,12 +55,8 @@ public class ChatRoomService {
         String user = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Users users = userRepo.findByEmail(user);
-        Doctors doctors = doctorRepo.findByEmail(user);
         if (users != null) {
-            return ResponseEntity.ok(chatRoomRepo.findAllByUserId(users));
-
-        } else if (doctors != null) {
-            return ResponseEntity.ok(chatRoomRepo.findAllByDoctorId(doctors.getId()));
+            return ResponseEntity.ok(chatRoomRepo.findAllByUserId(users.getId()));
 
         } else {
             throw  new BadRequestException("User not found");

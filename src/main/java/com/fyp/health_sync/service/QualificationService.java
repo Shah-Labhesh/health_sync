@@ -3,13 +3,14 @@ package com.fyp.health_sync.service;
 import com.fyp.health_sync.dtos.AddMoreDetailsDto;
 import com.fyp.health_sync.dtos.QualificationDto;
 import com.fyp.health_sync.dtos.UpdateQualificationDto;
-import com.fyp.health_sync.entity.Doctors;
 import com.fyp.health_sync.entity.Qualifications;
+import com.fyp.health_sync.entity.Users;
+import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
-import com.fyp.health_sync.repository.DoctorRepo;
 import com.fyp.health_sync.repository.QualificationRepo;
+import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.QualificationResponse;
 import com.fyp.health_sync.utils.SuccessResponse;
 import jakarta.transaction.Transactional;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,13 +33,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QualificationService {
     private final QualificationRepo qualificationRepo;
-    private final DoctorRepo doctorRepo;
+    private final UserRepo userRepo;
 
     public ResponseEntity<?> addQualification(QualificationDto qualification, UUID doctorId)
             throws BadRequestException, InternalServerErrorException {
         try {
-            Doctors doctor = doctorRepo.findById(doctorId)
+            Users doctor = userRepo.findById(doctorId)
                     .orElseThrow(() -> new BadRequestException("Doctor not found"));
+            if (doctor.getRole() != UserRole.DOCTOR) {
+                throw new BadRequestException("You are not authorized to add qualification");
+            }
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
             LocalDateTime dateTime = LocalDateTime.parse(qualification.getPassOutYear(), formatter);
@@ -49,7 +52,7 @@ public class QualificationService {
                     .institute(qualification.getInstitute())
                     .passOutYear(dateTime)
                     .certificate(qualification.getCertificate().getBytes())
-                    .doctorId(doctor)
+                    .doctor(doctor)
                     .build();
             qualificationRepo.save(qualifications);
             return ResponseEntity.created(null).body(new SuccessResponse("Qualification added successfully"));
@@ -60,24 +63,30 @@ public class QualificationService {
 
     public ResponseEntity<?> saveKhalti(AddMoreDetailsDto details, UUID doctorId)
             throws BadRequestException, InternalServerErrorException {
-        Doctors doctor = doctorRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new BadRequestException("You are not authorized to add qualification");
+        }
         try {
 
             doctor.setKhaltiId(details.getKhaltiId());
-            doctorRepo.save(doctor);
+            userRepo.save(doctor);
             return ResponseEntity.created(null).body(new SuccessResponse("Details added successfully"));
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
-    public ResponseEntity<?> saveQualificationAuth(QualificationDto qualification) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> saveQualificationAuth(QualificationDto qualification) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
 
-        Doctors doctor = doctorRepo.findByEmail(email);
+        Users doctor = userRepo.findByEmail(email);
         if (doctor == null) {
             throw new BadRequestException("Doctor not found");
+        }
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new ForbiddenException("You are not authorized to add qualification");
         }
 
         try {
@@ -88,7 +97,7 @@ public class QualificationService {
                     .qualification(qualification.getTitle())
                     .institute(qualification.getInstitute())
                     .passOutYear(dateTime)
-                    .doctorId(doctor)
+                    .doctor(doctor)
                     .build();
             qualificationRepo.save(qualifications);
             return ResponseEntity.ok().body(new SuccessResponse("Qualification added successfully"));
@@ -102,16 +111,19 @@ public class QualificationService {
 //        return ResponseEntity.ok().body(qualificationRepo.findByDoctorIdId(doctor.getId()));
 //    }
 
-    public ResponseEntity<?> getQualificationAuth() throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> getQualificationAuth() throws BadRequestException, InternalServerErrorException, ForbiddenException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
 
-        Doctors doctor = doctorRepo.findByEmail(email);
+        Users doctor = userRepo.findByEmail(email);
         if (doctor == null) {
             throw new BadRequestException("Doctor not found");
         }
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new ForbiddenException("You are not authorized to get qualification");
+        }
        try {
-           List<Qualifications> qualification = qualificationRepo.findByDoctorIdId(doctor.getId());
+           List<Qualifications> qualification = qualificationRepo.findAllByDoctorId(doctor.getId());
            List<QualificationResponse> qualificationResponseList = new ArrayList<>();
            for (Qualifications qualifications : qualification) {
 
@@ -127,13 +139,16 @@ public class QualificationService {
     public ResponseEntity<?> deleteQualification(UUID qualificationId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
-        Doctors doctor = doctorRepo.findByEmail(email);
+        Users doctor = userRepo.findByEmail(email);
         if (doctor == null) {
             throw new BadRequestException("Doctor not found");
         }
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new ForbiddenException("You are not authorized to delete qualification");
+        }
         Qualifications qualification = qualificationRepo.findById(qualificationId)
                 .orElseThrow(() -> new BadRequestException("Qualification not found"));
-        if (!qualification.getDoctorId().getId().equals(doctor.getId())) {
+        if (!qualification.getDoctor().getId().equals(doctor.getId())) {
             throw new ForbiddenException("You are not authorized to delete this qualification");
         }
         try {
@@ -149,13 +164,16 @@ public class QualificationService {
             throws BadRequestException, ForbiddenException, IOException, InternalServerErrorException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
-        Doctors doctor = doctorRepo.findByEmail(email);
+        Users doctor = userRepo.findByEmail(email);
         if (doctor == null) {
             throw new BadRequestException("Doctor not found");
         }
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new ForbiddenException("You are not authorized to update qualification");
+        }
         Qualifications qualification1 = qualificationRepo.findById(qualificationId)
                 .orElseThrow(() -> new BadRequestException("Qualification not found"));
-        if (!qualification1.getDoctorId().getId().equals(doctor.getId())) {
+        if (!qualification1.getDoctor().getId().equals(doctor.getId())) {
             throw new ForbiddenException("You are not authorized to update this qualification");
         }
         if (qualification.getQualification() != null) {
@@ -181,10 +199,13 @@ public class QualificationService {
 
     public ResponseEntity<?> updateQualificationByDoctorId(UUID doctorId, UUID qualificationId,
             UpdateQualificationDto qualification) throws ForbiddenException, BadRequestException, IOException, InternalServerErrorException {
-        Doctors doctor = doctorRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new ForbiddenException("You are not authorized to update qualification");
+        }
         Qualifications qualification1 = qualificationRepo.findById(qualificationId)
                 .orElseThrow(() -> new BadRequestException("Qualification not found"));
-        if (!qualification1.getDoctorId().getId().equals(doctor.getId())) {
+        if (!qualification1.getDoctor().getId().equals(doctor.getId())) {
             throw new ForbiddenException("You are not authorized to update this qualification");
         }
         if (qualification.getQualification() != null) {
@@ -210,10 +231,13 @@ public class QualificationService {
     @Transactional
     public ResponseEntity<?> deleteQualificationByDoctorId(UUID doctorId, UUID qualificationId)
             throws ForbiddenException, BadRequestException, InternalServerErrorException {
-        Doctors doctor = doctorRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new ForbiddenException("You are not authorized to delete qualification");
+        }
         Qualifications qualification = qualificationRepo.findById(qualificationId)
                 .orElseThrow(() -> new BadRequestException("Qualification not found"));
-        if (!qualification.getDoctorId().getId().equals(doctor.getId())) {
+        if (!qualification.getDoctor().getId().equals(doctor.getId())) {
             throw new ForbiddenException("You are not authorized to delete this qualification");
         }
        try{
@@ -224,15 +248,18 @@ public class QualificationService {
        }
     }
 
-    public ResponseEntity<?> getMyQualification() throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> getMyQualification() throws ForbiddenException, BadRequestException, InternalServerErrorException {
        try {
            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
            String email = auth.getName();
-           Doctors doctor = doctorRepo.findByEmail(email);
+           Users doctor = userRepo.findByEmail(email);
            if (doctor == null) {
                throw new BadRequestException("Doctor not found");
            }
-           List<Qualifications> qualification = qualificationRepo.findByDoctorIdId(doctor.getId());
+              if (doctor.getRole() != UserRole.DOCTOR) {
+                throw new ForbiddenException("You are not authorized to get qualification");
+              }
+           List<Qualifications> qualification = qualificationRepo.findAllByDoctorId(doctor.getId());
            List<QualificationResponse> qualificationResponseList = new ArrayList<>();
            for (Qualifications qualifications : qualification) {
 
@@ -244,15 +271,15 @@ public class QualificationService {
        }
     }
 
-    public ResponseEntity<?> getQualificationById(UUID doctorId) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> getQualificationById(UUID doctorId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
        
         try{
-            Optional<Doctors> doctor = doctorRepo.findById(doctorId);
-            if (doctor == null) {
-                throw new BadRequestException("Doctor not found");
+            Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+            if (doctor.getRole() != UserRole.DOCTOR) {
+                throw new ForbiddenException("You are not authorized to get qualification");
             }
 
-            List<Qualifications> qualification = qualificationRepo.findByDoctorIdId(doctorId);
+            List<Qualifications> qualification = qualificationRepo.findAllByDoctorId(doctorId);
             List<QualificationResponse> qualificationResponseList = new ArrayList<>();
             for (Qualifications qualifications : qualification) {
 

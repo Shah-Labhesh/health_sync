@@ -2,15 +2,14 @@ package com.fyp.health_sync.service;
 
 import com.fyp.health_sync.dtos.TakeAppointmentDto;
 import com.fyp.health_sync.entity.Appointments;
-import com.fyp.health_sync.entity.Doctors;
 import com.fyp.health_sync.entity.Slots;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.PaymentStatus;
+import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.AppointmentRepo;
-import com.fyp.health_sync.repository.DoctorRepo;
 import com.fyp.health_sync.repository.SlotRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.SuccessResponse;
@@ -27,7 +26,6 @@ public class AppointmentService {
 
     private final AppointmentRepo appointmentRepo;
     private final UserRepo userRepo;
-    private final DoctorRepo doctorRepo;
     private final SlotRepo slotRepo;
 
 
@@ -40,8 +38,11 @@ public class AppointmentService {
                 throw new BadRequestException("User not found");
             }
 
-            Doctors doctors = doctorRepo.findById(takeAppointmentDto.getDoctorId()).orElseThrow(() -> new BadRequestException("Doctor not found"));
-            if (doctors.getAccountStatus() != UserStatus.ACTIVE) {
+            Users doctors = userRepo.findById(takeAppointmentDto.getDoctorId()).orElseThrow(() -> new BadRequestException("Doctor not found"));
+            if (doctors.getRole() != UserRole.DOCTOR) {
+                throw new BadRequestException("Doctor Id is not valid");
+            }
+            if (doctors.getStatus() != UserStatus.ACTIVE) {
                 throw new BadRequestException("Doctor not found");
             }
 
@@ -51,18 +52,18 @@ public class AppointmentService {
             }
 
             Appointments appointments = Appointments.builder()
-                    .slotId(slots)
+                    .slot(slots)
                     .createdAt(LocalDateTime.now())
                     .notes(takeAppointmentDto.getNotes())
-                    .doctorId(doctors)
+                    .doctor(doctors)
                     .appointmentType(takeAppointmentDto.getAppointmentType())
-                    .UserId(users)
+                    .user(users)
                     .paymentStatus(PaymentStatus.PENDING)
                     .build();
             appointmentRepo.save(appointments);
             slots.setIsBooked(true);
             slotRepo.save(slots);
-            return ResponseEntity.ok(new SuccessResponse("Appointment created successfully"));
+            return ResponseEntity.ok(new SuccessResponse("Appointment booked successfully"));
 
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
@@ -77,7 +78,7 @@ public class AppointmentService {
             if (users == null) {
                 throw new BadRequestException("User not found");
             }
-            return ResponseEntity.ok(appointmentRepo.findAllByUserId(users));
+            return ResponseEntity.ok(appointmentRepo.findAllByUser(users));
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }

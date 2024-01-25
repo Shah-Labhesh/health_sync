@@ -25,38 +25,38 @@ public class DoctorController {
 
     private final DoctorService doctorService;
 
-    @SecurityRequirement(name = "BearerAuth")
-    @GetMapping("/current-doctor")
-    public ResponseEntity<?> getCurrentDoctor() throws BadRequestException {
+//    @SecurityRequirement(name = "BearerAuth")
+//    @GetMapping("/current-doctor")
+//    public ResponseEntity<?> getCurrentDoctor() throws BadRequestException {
+//
+//        return doctorService.currentDoctor();
+//    }
+//
+//    @Operation(summary = "Upload address of doctor")
+//    @PostMapping("/upload-address/{doctorId}")
+//    public ResponseEntity<?> uploadAddress(@PathVariable UUID doctorId, @RequestBody @Valid UploadAddressDto address) throws BadRequestException, JsonProcessingException {
+//    return doctorService.uploadAddress(doctorId, address);
+//    }
 
-        return doctorService.currentDoctor();
-    }
-
-    @Operation(summary = "Upload address of doctor")
-    @PostMapping("/upload-address/{doctorId}")
-    public ResponseEntity<?> uploadAddress(@PathVariable UUID doctorId, @RequestBody @Valid UploadAddressDto address) throws BadRequestException, JsonProcessingException {
-    return doctorService.uploadAddress(doctorId, address);
-    }
-
-    @Operation(summary = "Upload details of doctor")
-    @PostMapping("/upload-details/{doctorId}")
-    public ResponseEntity<?> uploadDetails(@PathVariable UUID doctorId, @RequestBody @Valid @ModelAttribute AddDoctorDetailsDto details) throws BadRequestException, IOException {
-        return doctorService.uploadDetails(doctorId, details);
-    }
-
-    @Operation(summary = "Get doctor details by doctorId for users")
-    @SecurityRequirement(name = "BearerAuth")
-    @GetMapping("/doctor-details/{doctorId}")
-    public ResponseEntity<?> getDoctorDetails(@PathVariable UUID doctorId) throws BadRequestException {
-        return doctorService.getDoctorDetails(doctorId);
-    }
-
-    @Operation(summary = "Update Doctor Details with authentication")
-    @SecurityRequirement(name = "BearerAuth")
-    @PutMapping("/current-doctor")
-    public ResponseEntity<?> updateAddress(@RequestBody @Valid UpdateDoctorDto doctor) throws BadRequestException {
-        return doctorService.updateDoctorDetails(doctor);
-    }
+//    @Operation(summary = "Upload details of doctor")
+//    @PostMapping("/upload-details/{doctorId}")
+//    public ResponseEntity<?> uploadDetails(@PathVariable UUID doctorId, @RequestBody @Valid @ModelAttribute AddDoctorDetailsDto details) throws BadRequestException, IOException {
+//        return doctorService.uploadDetails(doctorId, details);
+//    }
+//
+//    @Operation(summary = "Get doctor details by doctorId for users")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @GetMapping("/doctor-details/{doctorId}")
+//    public ResponseEntity<?> getDoctorDetails(@PathVariable UUID doctorId) throws BadRequestException {
+//        return doctorService.getDoctorDetails(doctorId);
+//    }
+//
+//    @Operation(summary = "Update Doctor Details with authentication")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PutMapping("/current-doctor")
+//    public ResponseEntity<?> updateAddress(@RequestBody @Valid UpdateDoctorDto doctor) throws BadRequestException {
+//        return doctorService.updateDoctorDetails(doctor);
+//    }
 
 
 

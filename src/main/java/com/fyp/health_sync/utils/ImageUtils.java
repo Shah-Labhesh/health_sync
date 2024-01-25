@@ -9,10 +9,6 @@ import java.util.zip.Inflater;
 
 public class ImageUtils {
 
-
-    public static String convertToBase64(byte[] profilePicture) {
-        return Base64.getEncoder().encodeToString(profilePicture);
-    }
     public static byte[] compressImage(byte[] image){
         Deflater deflater = new Deflater();
         deflater.setLevel(Deflater.BEST_COMPRESSION);

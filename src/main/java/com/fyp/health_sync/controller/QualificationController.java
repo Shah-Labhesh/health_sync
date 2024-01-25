@@ -52,14 +52,14 @@ public class QualificationController {
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Add qualification of doctor after authentication")
     @PostMapping("/auth")
-    public ResponseEntity<?> addQualificationAuth(@RequestBody @Valid QualificationDto qualification) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> addQualificationAuth(@RequestBody @Valid QualificationDto qualification) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         return qualificationService.saveQualificationAuth(qualification);
     }
 
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Get qualification of doctor by users")
     @GetMapping("/user/{doctorId}")
-    public ResponseEntity<?> getQualification(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> getQualification(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         return qualificationService.getQualificationById( doctorId);
     }
 
@@ -80,13 +80,13 @@ public class QualificationController {
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Get qualification of doctor himself")
     @GetMapping("/my-qualification")
-    public ResponseEntity<?> getMyQualification() throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> getMyQualification() throws BadRequestException, InternalServerErrorException, ForbiddenException {
         return qualificationService.getMyQualification();
     }
 
     @Operation(summary = "Get qualification of doctor himself")
     @GetMapping("/doctor/{doctorId}")
-    public ResponseEntity<?> getQualificationOfDoctor(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> getQualificationOfDoctor(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         return qualificationService.getQualificationById( doctorId);
     }
 }

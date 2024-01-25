@@ -12,7 +12,8 @@ import java.util.UUID;
 @Repository
 public interface AppointmentRepo extends JpaRepository<Appointments, UUID> {
 
-    @Query("SELECT a FROM Appointments a WHERE a.UserId = ?1")
-    List<Appointments> findAllByUserId(Users users);
+
+    @Query("select a from Appointments a where a.user = ?1")
+    List<Appointments> findAllByUser(Users users);
 
 }

@@ -1,10 +1,8 @@
 package com.fyp.health_sync.utils;
 
-import com.fyp.health_sync.entity.Doctors;
 import com.fyp.health_sync.entity.MedicalRecords;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.RecordType;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +26,7 @@ public class RecordResponse {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
     private Users user;
-    private Doctors doctor;
+    private Users doctor;
 
     public RecordResponse castToResponse(MedicalRecords record){
         if (record == null) {

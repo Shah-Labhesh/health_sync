@@ -33,16 +33,16 @@ public class RatingReviews {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctorId", referencedColumnName = "id")
-    private Doctors doctorId;
+    @JoinColumn(name = "doctor", referencedColumnName = "id")
+    private Users doctor;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "id")
-    private Users userId;
+    @JoinColumn(name = "user", referencedColumnName = "id")
+    private Users user;
 
     @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name = "appointmentId", referencedColumnName = "appointmentId")
-    private Appointments appointmentId;
+    @JoinColumn(name = "appointment", referencedColumnName = "id")
+    private Appointments appointment;
 
 }
 

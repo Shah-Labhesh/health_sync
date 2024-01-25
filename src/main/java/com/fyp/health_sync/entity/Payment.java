@@ -27,13 +27,13 @@ public class Payment {
     private double amount;
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user", referencedColumnName = "id")
     private Users user;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "doctor_id", referencedColumnName = "id")
-    private Doctors doctor;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor", referencedColumnName = "id")
+    private Users doctor;
 
 
 }

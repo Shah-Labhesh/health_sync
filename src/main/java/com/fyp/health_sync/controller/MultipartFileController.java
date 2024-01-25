@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.zip.DataFormatException;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +20,7 @@ public class MultipartFileController {
     private final MultipartFileService multipartFileService;
 
     @GetMapping("/get-avatar/{userId}")
-    public ResponseEntity<?> getAvatar(@PathVariable UUID userId) throws BadRequestException {
+    public ResponseEntity<?> getAvatar(@PathVariable UUID userId) throws BadRequestException, DataFormatException {
         return multipartFileService.getAvatarById(userId);
     }
     @GetMapping("/certificate/{qualificationId}")

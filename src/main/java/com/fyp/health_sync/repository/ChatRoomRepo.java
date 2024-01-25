@@ -12,9 +12,9 @@ import java.util.UUID;
 @Repository
 public interface ChatRoomRepo extends JpaRepository<ChatRoom, UUID> {
 
-    List<ChatRoom> findAllByUserId(Users userId);
+    List<ChatRoom> findAllByUserId(UUID user_id);
 
     List<ChatRoom> findAllByDoctorId(UUID doctorId);
 
-    ChatRoom findByUserIdAndDoctorId(Users userId, UUID doctorId);
+    ChatRoom findByUserIdAndDoctorId(UUID user_id, UUID doctor_id);
 }

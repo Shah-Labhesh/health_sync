@@ -3,13 +3,14 @@ package com.fyp.health_sync.service;
 
 import com.fyp.health_sync.dtos.AddSlotDto;
 import com.fyp.health_sync.dtos.UpdateSlotDto;
-import com.fyp.health_sync.entity.Doctors;
 import com.fyp.health_sync.entity.Slots;
+import com.fyp.health_sync.entity.Users;
+import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
-import com.fyp.health_sync.repository.DoctorRepo;
 import com.fyp.health_sync.repository.SlotRepo;
 
+import com.fyp.health_sync.repository.UserRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,35 +20,32 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SlotService {
 
     private final SlotRepo slotRepo;
-    private final DoctorRepo doctorRepo;
+    private final UserRepo userRepo;
 
     public ResponseEntity<?> createSlot(AddSlotDto slot) throws BadRequestException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentPrincipalName = authentication.getName();
-        Doctors doctor = doctorRepo.findByEmail(currentPrincipalName);
+        String currentPrincipalName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users doctor = userRepo.findByEmail(currentPrincipalName);
         if (doctor == null) {
             throw new BadRequestException("Doctor not found");
         }
+        if (doctor.getRole() != UserRole.DOCTOR){
+            throw new BadRequestException("You are not authorized to create slots");
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        LocalDateTime dateTime = LocalDateTime.parse(slot.getSlotDateTime().toString(), formatter);
-        // if doctor has same slot
+        LocalDateTime dateTime = LocalDateTime.parse(slot.getSlotDateTime(), formatter);
         Slots slots1 = slotRepo.findBySlotDateTimeAndDoctor(dateTime, doctor);
         Slots slots2 = slotRepo.findBySlotDateTimeAndDoctor(dateTime.plusHours(1), doctor);
 
         if (slots1 != null || slots2 != null){
             throw new BadRequestException("You already have a slot at this time");
         }
-        // same doctor should have 1 hour gap between slots
-
 
         Slots slots = Slots.builder()
                 .slotDateTime(dateTime)
@@ -61,14 +59,14 @@ public class SlotService {
     public ResponseEntity<?> updateSlot(UUID slotId, UpdateSlotDto slot) throws BadRequestException, ForbiddenException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
-        Doctors doctor = doctorRepo.findByEmail(currentPrincipalName);
+        Users doctor = userRepo.findByEmail(currentPrincipalName);
         if (doctor == null) {
             throw new BadRequestException("Doctor not found");
         }
-       Slots slots = slotRepo.findBySlotId(slotId);
-        if (slots == null) {
-            throw new BadRequestException("Slot not found");
+        if (doctor.getRole() != UserRole.DOCTOR){
+            throw new ForbiddenException("You are not authorized to update slots");
         }
+       Slots slots = slotRepo.findById(slotId).orElseThrow(() -> new BadRequestException("Slot not found"));
         if (slots.getIsBooked()){
             throw new BadRequestException("Slot is already booked");
         }
@@ -86,14 +84,15 @@ public class SlotService {
     public ResponseEntity<?> deleteSlot(UUID slotId) throws BadRequestException, ForbiddenException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
-        Doctors doctor = doctorRepo.findByEmail(currentPrincipalName);
+        Users doctor = userRepo.findByEmail(currentPrincipalName);
         if (doctor == null) {
             throw new BadRequestException("Doctor not found");
         }
-        Slots slots = slotRepo.findBySlotId(slotId);
-        if (slots == null) {
-            throw new BadRequestException("Slot not found");
+        if (doctor.getRole() != UserRole.DOCTOR){
+            throw new ForbiddenException("You are not authorized to delete slots");
         }
+        Slots slots = slotRepo.findById(slotId).orElseThrow(() -> new BadRequestException("Slot not found"));
+
         if (slots.getIsBooked()){
             throw new BadRequestException("Slot is already booked");
         }
@@ -104,21 +103,24 @@ public class SlotService {
         return ResponseEntity.ok("Slot deleted successfully");
     }
 
-    public ResponseEntity<?> getMySlots() throws BadRequestException {
+    public ResponseEntity<?> getMySlots() throws BadRequestException, ForbiddenException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
-        Doctors doctor = doctorRepo.findByEmail(currentPrincipalName);
+        Users doctor = userRepo.findByEmail(currentPrincipalName);
         if (doctor == null) {
             throw new BadRequestException("Doctor not found");
+        }
+        if (doctor.getRole() != UserRole.DOCTOR){
+            throw new ForbiddenException("You are not authorized to get slots");
         }
         
         return ResponseEntity.ok(slotRepo.findAllByDoctorIdOrderBySlotDateTime(doctor.getId()));
     }
 
-    public ResponseEntity<?> getDoctorSlots(UUID doctorId) throws BadRequestException {
-        Optional<Doctors> doctor = doctorRepo.findById(doctorId);
-        if (doctor.isEmpty()) {
-            throw new BadRequestException("Doctor not found");
+    public ResponseEntity<?> getDoctorSlots(UUID doctorId) throws BadRequestException, ForbiddenException {
+        Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new ForbiddenException("You are not authorized to get slots");
         }
         return ResponseEntity.ok(slotRepo.findByDoctorIdAndIsBookedIsFalseAndSlotDateTimeIsGreaterThanEqual(doctorId, LocalDateTime.now()));
     }

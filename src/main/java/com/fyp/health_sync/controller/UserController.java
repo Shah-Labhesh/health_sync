@@ -1,48 +1,60 @@
 package com.fyp.health_sync.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fyp.health_sync.dtos.AddDoctorDetailsDto;
 import com.fyp.health_sync.dtos.UpdateUserDto;
+import com.fyp.health_sync.dtos.UploadAddressDto;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.mail.Multipart;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.zip.DataFormatException;
+import java.util.UUID;
 
 @RestController
-@SecurityRequirement(name = "BearerAuth")
-
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
+    @SecurityRequirement(name = "BearerAuth")
     @GetMapping("/current-user")
-    public ResponseEntity<?> getAllUser() throws BadRequestException, DataFormatException {
+    public ResponseEntity<?> getAllUser() throws BadRequestException, InternalServerErrorException {
         return userService.currentUser();
     }
 
+    @SecurityRequirement(name = "BearerAuth")
     @PutMapping("/current-user")
-    public ResponseEntity<?> updateUser(@RequestBody @Valid UpdateUserDto user) throws BadRequestException {
+    public ResponseEntity<?> updateUser(@RequestBody @Valid UpdateUserDto user) throws BadRequestException, InternalServerErrorException, IOException {
         return userService.updateUser(user);
     }
 
-    @PostMapping("upload-profile-picture")
-    public ResponseEntity<?> uploadProfilePicture(@RequestBody MultipartFile file) throws BadRequestException, IOException {
-        return userService.uploadProfilePicture(file);
+
+    @Operation(summary = "Upload address of doctor")
+    @PostMapping("/upload-address/{userId}")
+    public ResponseEntity<?> uploadAddress(@PathVariable UUID userId, @RequestBody @Valid UploadAddressDto address) throws BadRequestException, JsonProcessingException, InternalServerErrorException {
+        return userService.uploadAddress(userId, address);
     }
 
-    @GetMapping("profile-picture")
-    public ResponseEntity<?> getProfilePicture() throws BadRequestException, InternalServerErrorException {
-        return userService.getProfileImage();
+    @Operation(summary = "Upload details of doctor")
+    @PostMapping("/upload-details/{userId}")
+    public ResponseEntity<?> uploadDetails(@PathVariable UUID userId, @RequestBody @Valid @ModelAttribute AddDoctorDetailsDto details) throws BadRequestException, IOException, InternalServerErrorException {
+        return userService.uploadDetails(userId, details);
+    }
+
+    @Operation(summary = "Get doctor details by doctorId for users")
+    @SecurityRequirement(name = "BearerAuth")
+    @GetMapping("/user-details/{userId}")
+    public ResponseEntity<?> getDoctorDetails(@PathVariable UUID userId) throws BadRequestException, InternalServerErrorException {
+        return userService.getUserDetails(userId);
     }
 
 

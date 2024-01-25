@@ -1,16 +1,14 @@
 package com.fyp.health_sync.service;
 
 
-import com.fyp.health_sync.entity.Doctors;
 import com.fyp.health_sync.entity.MedicalRecords;
 import com.fyp.health_sync.entity.Qualifications;
 import com.fyp.health_sync.entity.Users;
-import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
-import com.fyp.health_sync.repository.DoctorRepo;
 import com.fyp.health_sync.repository.MedicalRecordRepo;
 import com.fyp.health_sync.repository.QualificationRepo;
 import com.fyp.health_sync.repository.UserRepo;
+import com.fyp.health_sync.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -18,8 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
+import java.util.zip.DataFormatException;
 
 @Service
 @RequiredArgsConstructor
@@ -28,19 +26,12 @@ public class MultipartFileService {
     private  final QualificationRepo qualificationRepo;
     private final MedicalRecordRepo medicalRecordRepo;
     private final UserRepo userRepo;
-    private final DoctorRepo doctorRepo;
 
-    public ResponseEntity<?> getAvatarById(UUID id) throws BadRequestException {
-        Users user = userRepo.findById(id).orElse(null);
-        Doctors doc = doctorRepo.findById(id).orElse(null);
+    public ResponseEntity<?> getAvatarById(UUID id) throws BadRequestException, DataFormatException {
+        Users user = userRepo.findById(id).orElseThrow(() -> new BadRequestException("User not found"));
 
-        if (user != null) {
-            return buildImageResponse(user.getProfilePicture(), user.getName());
-        } else if (doc != null) {
-            return buildImageResponse(doc.getImage(), doc.getName());
-        } else {
-            throw new BadRequestException("Avatar not found");
-        }
+            return buildImageResponse(ImageUtils.decompressImage(user.getProfilePicture()), user.getName());
+
     }
 
     private ResponseEntity<?> buildImageResponse(byte[] imageBytes, String filename) {

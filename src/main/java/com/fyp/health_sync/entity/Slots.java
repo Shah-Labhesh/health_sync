@@ -23,11 +23,11 @@ public class Slots {
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(updatable = false, nullable = false)
-    private UUID slotId;
+    private UUID id;
 
     @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctorId", referencedColumnName = "id")
-    private Doctors doctor;
+    @JoinColumn(name = "doctor", referencedColumnName = "id")
+    private Users doctor;
     private LocalDateTime slotDateTime;
     private Boolean isBooked;
     private LocalDateTime createdAt;

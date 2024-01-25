@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Blob;
 import java.util.UUID;
@@ -45,10 +46,8 @@ public class UpdateDoctorDto {
     private Integer fee;
 
 
-    private byte[] image;
+    private MultipartFile image;
 
-
-    @NotBlank(message = "Khalti Id cannot be empty")
     @Pattern(regexp = "^(\\+)?(977)?([0-9]{10})$", message = "Invalid Khalti Id")
     private String khaltiId;
 }

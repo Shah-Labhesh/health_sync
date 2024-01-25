@@ -30,7 +30,7 @@ public class Favorites {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
-    private Doctors doctor;
+    private Users doctor;
 
     private LocalDateTime  createdAt = LocalDateTime.now();
 

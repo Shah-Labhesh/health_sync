@@ -36,6 +36,17 @@ public class Users {
     private String email;
     @JsonIgnore
     private String password;
+    private double latitude;
+    private double longitude;
+    private String address;
+    @OneToOne
+    @JoinColumn(name = "speciality" , referencedColumnName = "id")
+    private Speciality speciality;
+    private String experience;
+    private Integer fee;
+    private boolean isPopular;
+    private String khaltiId;
+    private Boolean approved;
     @Lob
     private byte[] profilePicture;
     private LocalDateTime createdAt;

@@ -30,10 +30,8 @@ public class ContactSupport {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "id")
-    private Users userId;
+    @JoinColumn(name = "user", referencedColumnName = "id")
+    private Users user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctorId", referencedColumnName = "id")
-    private Doctors doctorId;
+
 }

@@ -1,7 +1,7 @@
 package com.fyp.health_sync.utils;
 
 
-import com.fyp.health_sync.entity.Doctors;
+import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.AuthType;
 import com.fyp.health_sync.enums.UserStatus;
 import lombok.AllArgsConstructor;
@@ -40,7 +40,7 @@ public class DoctorResponse {
     private boolean isApproved;
     private boolean isFavorite;
 
-    public DoctorResponse castToResponse(Doctors doctor){
+    public DoctorResponse castToResponse(Users doctor){
         if (doctor == null) {
             return null;
         }
@@ -59,9 +59,9 @@ public class DoctorResponse {
                 .longitude(doctor.getLongitude())
                 .experience(doctor.getExperience())
                 .isApproved(doctor.getApproved())
-                .accountStatus(doctor.getAccountStatus())
+                .accountStatus(doctor.getStatus())
                 .isVerified(doctor.getIsVerified())
-                .avatar(doctor.getImage() != null ? "get-avatar/" + doctor.getId() : null)
+                .avatar(doctor.getProfilePicture() != null ? "get-avatar/" + doctor.getId() : null)
                 .build();
     }
 

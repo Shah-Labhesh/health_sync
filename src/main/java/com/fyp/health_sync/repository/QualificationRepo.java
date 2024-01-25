@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface QualificationRepo extends JpaRepository<Qualifications, UUID> {
 
-    List<Qualifications> findByDoctorIdId(UUID doctorId);
+    List<Qualifications> findAllByDoctorId(UUID doctorId);
 
 
     void deleteQualificationsById(UUID id);

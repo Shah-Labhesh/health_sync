@@ -1,6 +1,7 @@
 package com.fyp.health_sync.entity;
 
 
+import com.fyp.health_sync.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,31 +12,33 @@ import org.hibernate.annotations.GenericGenerator;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="share_medical_records")
+@Data
 @Builder
-public class ShareMedicalRecords {
+@Entity
+@Table(name = "notifications")
+public class Notification {
+
 
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(updatable = false, nullable = false)
     private UUID id;
-
+    private String title;
+    private String body;
+    private NotificationType type;
+    private boolean isRead;
+    private UUID userId;
+    private UUID doctorId;
+    private UUID patientId;
+    private UUID appointmentId;
+    private UUID prescriptionId;
+    private UUID medicalReportId;
+    private UUID chatRoomId;
+    private UUID paymentId;
+    private UUID reviewId;
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "medical_records", referencedColumnName = "id")
-    private MedicalRecords medicalRecords;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user", referencedColumnName = "id")
-    private Users user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor", referencedColumnName = "id")
-    private Users doctor;
+    private LocalDateTime deletedAt;
 }

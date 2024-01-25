@@ -20,7 +20,7 @@ public class AppointmentController {
     @PostMapping
     public ResponseEntity<?> createAppointment(@RequestBody @Valid TakeAppointmentDto takeAppointmentDto) throws BadRequestException, InternalServerErrorException {
 
-     return    appointmentService.createAppointment(takeAppointmentDto);
+     return appointmentService.createAppointment(takeAppointmentDto);
     }
 
     @GetMapping("/my-appointments")
