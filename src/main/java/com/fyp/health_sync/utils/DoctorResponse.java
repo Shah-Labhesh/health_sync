@@ -4,10 +4,8 @@ package com.fyp.health_sync.utils;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.AuthType;
 import com.fyp.health_sync.enums.UserStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fyp.health_sync.repository.RatingRepo;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,7 +15,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class DoctorResponse {
-
     private UUID id;
     private String name;
     private String email;
@@ -28,7 +25,7 @@ public class DoctorResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
-    private boolean isVerified;
+    private boolean verified;
     private UserStatus accountStatus;
     private Integer fee;
     private String avatar;
@@ -36,9 +33,11 @@ public class DoctorResponse {
     private double latitude;
     private double longitude;
     private String khaltiId;
-
+    private double avgRatings = 0;
+    private int ratingCount = 0;
     private boolean isApproved;
     private boolean isFavorite;
+
 
     public DoctorResponse castToResponse(Users doctor){
         if (doctor == null) {
@@ -58,9 +57,10 @@ public class DoctorResponse {
                 .latitude(doctor.getLatitude())
                 .longitude(doctor.getLongitude())
                 .experience(doctor.getExperience())
-                .isApproved(doctor.getApproved())
+                .isApproved(doctor.getApproved() != null ? doctor.getApproved() : false)
                 .accountStatus(doctor.getStatus())
-                .isVerified(doctor.getIsVerified())
+                .verified(doctor.getIsVerified())
+                .khaltiId(doctor.getKhaltiId())
                 .avatar(doctor.getProfilePicture() != null ? "get-avatar/" + doctor.getId() : null)
                 .build();
     }

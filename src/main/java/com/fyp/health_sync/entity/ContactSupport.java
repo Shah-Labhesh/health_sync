@@ -27,6 +27,7 @@ public class ContactSupport {
 
     private String email;
     private String message;
+    private String responseMessage;
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -25,10 +25,10 @@ public class UserResponse {
     private UUID id;
     private String name;
     private String email;
-    private String profilePicture;
+    private String avatar;
     private LocalDateTime createdAt;
-    private Boolean isVerified;
-    private UserStatus status;
+    private Boolean verified;
+    private UserStatus accountStatus;
     private UserRole role;
     private AuthType authType;
     private LocalDateTime updatedAt;
@@ -45,9 +45,9 @@ public class UserResponse {
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .deletedAt(user.getDeletedAt())
-                .status(user.getStatus())
-                .isVerified(user.getIsVerified())
-                .profilePicture(user.getProfilePicture() != null ? "get-avatar/" + user.getId() : null)
+                .accountStatus(user.getStatus())
+                .verified(user.getIsVerified())
+                .avatar(user.getProfilePicture() != null ? "get-avatar/" + user.getId() : null)
                 .role(user.getRole())
                 .build();
     }

@@ -2,51 +2,40 @@ package com.fyp.health_sync.utils;
 
 
 import java.io.ByteArrayOutputStream;
-import java.util.Base64;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 public class ImageUtils {
 
-    public static byte[] compressImage(byte[] image){
+    public static byte[] compress(byte[] input) {
         Deflater deflater = new Deflater();
-        deflater.setLevel(Deflater.BEST_COMPRESSION);
-        deflater.setInput(image);
+        deflater.setInput(input);
         deflater.finish();
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(image.length);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
 
-        byte[] buffer = new byte[4*1024];
-        while (!deflater.finished()){
-            int count = deflater.deflate(buffer);
-            outputStream.write(buffer, 0, count);
+        while (!deflater.finished()) {
+            int compressedSize = deflater.deflate(buffer);
+            outputStream.write(buffer, 0, compressedSize);
         }
 
-        try {
-            outputStream.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
         return outputStream.toByteArray();
-
     }
 
-    public static byte[] decompressImage(byte[] image) throws  DataFormatException {
+    public static byte[] decompress(byte[] input) throws DataFormatException {
         Inflater inflater = new Inflater();
-        inflater.setInput(image);
+        inflater.setInput(input);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(image.length);
-        byte[] buffer = new byte[4*1024];
-        while (!inflater.finished()){
-            int count = inflater.inflate(buffer);
-            outputStream.write(buffer, 0, count);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+
+        while (!inflater.finished()) {
+            int decompressedSize = inflater.inflate(buffer);
+            outputStream.write(buffer, 0, decompressedSize);
         }
-        try {
-            outputStream.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+
         return outputStream.toByteArray();
     }
 

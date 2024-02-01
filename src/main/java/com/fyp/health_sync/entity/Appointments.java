@@ -28,15 +28,15 @@ public class Appointments {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")
     private Users user;
     private String appointmentType;
-    @OneToOne (fetch = FetchType.LAZY)
+    @OneToOne (fetch = FetchType.EAGER)
     @JoinColumn(name = "slot", referencedColumnName = "id")
     private Slots slot;
     private String notes;

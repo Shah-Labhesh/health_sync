@@ -5,6 +5,7 @@ import com.fyp.health_sync.entity.Speciality;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.SpecialityRepo;
+import com.fyp.health_sync.utils.ImageUtils;
 import com.fyp.health_sync.utils.SpecialityResponse;
 import com.fyp.health_sync.utils.SuccessResponse;
 import jakarta.transaction.Transactional;
@@ -38,9 +39,16 @@ public class SpecialityService {
 
     public ResponseEntity<?> addSpeciality(AddSpecialityDto speciality) throws InternalServerErrorException {
         try{
+            byte[] compressedData = ImageUtils.compress(speciality.getImage().getBytes());
+
+            byte[] decompressedData = ImageUtils.decompress(compressedData);
+
+            System.out.println("Original: " + speciality.getImage().getBytes().length + " bytes");
+            System.out.println("Compressed: " + compressedData.length + " bytes");
+            System.out.println("Decompressed: " + decompressedData.length + " bytes");
             Speciality newSpeciality = Speciality.builder()
                     .name(speciality.getName())
-                    .image(speciality.getImage().getBytes())
+                    .image(ImageUtils.compress(speciality.getImage().getBytes()))
                     .build();
             specialityRepo.save(newSpeciality);
             return ResponseEntity.ok(new SuccessResponse("Speciality added successfully"));

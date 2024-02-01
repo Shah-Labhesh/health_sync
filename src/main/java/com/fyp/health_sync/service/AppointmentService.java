@@ -12,6 +12,7 @@ import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.AppointmentRepo;
 import com.fyp.health_sync.repository.SlotRepo;
 import com.fyp.health_sync.repository.UserRepo;
+import com.fyp.health_sync.utils.AppointmentResponse;
 import com.fyp.health_sync.utils.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -78,7 +81,20 @@ public class AppointmentService {
             if (users == null) {
                 throw new BadRequestException("User not found");
             }
-            return ResponseEntity.ok(appointmentRepo.findAllByUser(users));
+            System.out.println(users.getId());
+            List<AppointmentResponse> list = new ArrayList<>();
+            if (users.getRole() == UserRole.DOCTOR){
+                for (Appointments appointments : appointmentRepo.findAllByDoctor(users)) {
+                    list.add(new AppointmentResponse().castToResponse(appointments));
+
+                }
+                return ResponseEntity.ok(list);
+            }
+            for (Appointments appointments : appointmentRepo.findAllByUser(users)) {
+                list.add(new AppointmentResponse().castToResponse(appointments));
+
+            }
+            return ResponseEntity.ok(list);
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }

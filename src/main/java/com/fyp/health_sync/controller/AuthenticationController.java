@@ -24,9 +24,9 @@ public class AuthenticationController {
     private final AuthService authService;
     private final FirebaseAuthenticationService firebaseAuthenticationService;
 
-    @PostMapping("/google-authenticate")
-    public ResponseEntity<?> authenticateWithGoogle(@RequestBody String idToken) throws FirebaseAuthException, BadRequestException {
-        return firebaseAuthenticationService.authenticate(idToken);
+    @PostMapping("/google-authenticate/{name}/{email}")
+    public ResponseEntity<?> authenticateWithGoogle(@PathVariable String name, @PathVariable String email) throws  BadRequestException {
+        return firebaseAuthenticationService.authenticate(name, email);
     }
 
     @Operation(summary = "Register User traditionally")

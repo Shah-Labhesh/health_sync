@@ -12,7 +12,6 @@ import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.MedicalRecordRepo;
 import com.fyp.health_sync.repository.ShareRecordRepo;
 import com.fyp.health_sync.repository.UserRepo;
-import com.fyp.health_sync.utils.ImageUtils;
 import com.fyp.health_sync.utils.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -71,7 +70,7 @@ public class MedicalRecordService {
             Users patient = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
             MedicalRecords medicalRecords = MedicalRecords.builder()
                     .recordType(recordDto.getRecordType())
-                    .record(ImageUtils.compressImage(recordDto.getRecord().getBytes()))
+                    .record(recordDto.getRecord().getBytes())
                     .recordText(recordDto.getRecordText())
                     .selfAdded(false)
                     .user(patient)
@@ -145,9 +144,8 @@ public class MedicalRecordService {
         }
         records.get().setUpdatedAt(LocalDateTime.now());
         medicalRecordRepo.save(records.get());
-        SuccessResponse successResponse = new SuccessResponse();
-        successResponse.setMessage("Record Updated successfully");
-        return ResponseEntity.ok().body(successResponse);
+
+        return ResponseEntity.ok().body(new SuccessResponse("Record updated successfully"));
     }
 
     public ResponseEntity<?> deleteMedicalRecord(UUID recordId) throws BadRequestException, ForbiddenException {
@@ -166,9 +164,8 @@ public class MedicalRecordService {
         }
         records.get().setDeletedAt(LocalDateTime.now());
         medicalRecordRepo.save(records.get());
-        SuccessResponse successResponse = new SuccessResponse();
-        successResponse.setMessage("Record Deleted successfully");
-        return ResponseEntity.ok().body(successResponse);
+
+        return ResponseEntity.ok().body(new SuccessResponse("Record deleted successfully"));
     }
 
     public ResponseEntity<?> shareMedicalRecord(UUID recordId, UUID doctorId) throws BadRequestException, ForbiddenException, InternalServerErrorException {

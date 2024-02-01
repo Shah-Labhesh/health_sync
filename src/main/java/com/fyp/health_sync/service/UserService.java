@@ -2,6 +2,7 @@ package com.fyp.health_sync.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fyp.health_sync.dtos.AddDoctorDetailsDto;
+import com.fyp.health_sync.dtos.AddMoreDetailsDto;
 import com.fyp.health_sync.dtos.UpdateUserDto;
 import com.fyp.health_sync.dtos.UploadAddressDto;
 import com.fyp.health_sync.entity.Speciality;
@@ -92,13 +93,29 @@ public class UserService {
            doctor.setSpeciality(speciality);
            doctor.setExperience(details.getExperience());
            doctor.setFee(details.getFee());
-           doctor.setProfilePicture(ImageUtils.compressImage(details.getImage().getBytes()));
+           doctor.setProfilePicture(details.getImage().getBytes());
            userRepo.save(doctor);
 
            return ResponseEntity.created(null).body(new SuccessResponse("Details uploaded successfully"));
        } catch (Exception e) {
            throw new InternalServerErrorException(e.getMessage());
        }
+    }
+
+    public ResponseEntity<?> saveKhalti(AddMoreDetailsDto details, UUID doctorId)
+            throws BadRequestException, InternalServerErrorException {
+        Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new BadRequestException("You are not authorized to add qualification");
+        }
+        try {
+
+            doctor.setKhaltiId(details.getKhaltiId());
+            userRepo.save(doctor);
+            return ResponseEntity.created(null).body(new SuccessResponse("Details added successfully"));
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
     }
 
     public ResponseEntity<?> updateUser(UpdateUserDto updateUserDto) throws BadRequestException, IOException, InternalServerErrorException {
@@ -130,7 +147,7 @@ public class UserService {
                }
            }
            if (updateUserDto.getProfileImage() != null) {
-               user.setProfilePicture(ImageUtils.compressImage(updateUserDto.getProfileImage().getBytes()));
+               user.setProfilePicture(updateUserDto.getProfileImage().getBytes());
            }
            if (user.getRole() == UserRole.DOCTOR){
                if (updateUserDto.getLatitude() > 0 || updateUserDto.getLongitude() > 0){

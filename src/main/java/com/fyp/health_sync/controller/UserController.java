@@ -3,6 +3,7 @@ package com.fyp.health_sync.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fyp.health_sync.dtos.AddDoctorDetailsDto;
+import com.fyp.health_sync.dtos.AddMoreDetailsDto;
 import com.fyp.health_sync.dtos.UpdateUserDto;
 import com.fyp.health_sync.dtos.UploadAddressDto;
 import com.fyp.health_sync.exception.BadRequestException;
@@ -50,7 +51,11 @@ public class UserController {
         return userService.uploadDetails(userId, details);
     }
 
-
+    @Operation(summary = "Add khalti number of doctor")
+    @PostMapping("/khaltiId/{doctorId}")
+    public ResponseEntity<?> addQualification(@PathVariable UUID doctorId, @RequestBody @Valid AddMoreDetailsDto details) throws BadRequestException, IOException, InternalServerErrorException {
+        return userService.saveKhalti(details, doctorId);
+    }
 
 
 }

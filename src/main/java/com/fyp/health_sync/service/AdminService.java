@@ -7,7 +7,6 @@ import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.UserRepo;
-import com.fyp.health_sync.utils.AdminDashboardResponse;
 import com.fyp.health_sync.utils.DoctorResponse;
 import com.fyp.health_sync.utils.SuccessResponse;
 import com.fyp.health_sync.utils.UserResponse;
@@ -24,7 +23,6 @@ import java.util.*;
 public class AdminService {
 
     private final UserRepo userRepo;
-//    private final DoctorRepo doctorRepo;
 
 
 
@@ -78,7 +76,7 @@ public class AdminService {
             if (user.getStatus() == UserStatus.DELETED){
                 throw  new BadRequestException("User already deleted");
             }
-            if (status != UserStatus.DELETED){
+            if (status == UserStatus.DELETED){
                 user.setDeletedAt(LocalDateTime.now());
                 user.setStatus(UserStatus.DELETED);
             }else{
@@ -151,7 +149,7 @@ public class AdminService {
 
     public List<DoctorResponse> getDoctorsByStatus(UserStatus status) throws InternalServerErrorException {
         try {
-            List<Users> users = userRepo.findAllByStatusAndRole(status,UserRole.DOCTOR);
+            List<Users> users = userRepo.findAllByStatusAndRoleAndApproved(status,UserRole.DOCTOR, true);
             List<DoctorResponse> response = new ArrayList<>();
             for (Users user: users) {
                 response.add(new DoctorResponse().castToResponse(user));
@@ -186,39 +184,17 @@ public class AdminService {
         }
     }
 
-    // count of all users and doctors
-    public Integer countUsersByStatus(UserStatus status, UserRole role ) throws InternalServerErrorException {
-        try{
-            if (role == UserRole.USER){
-                return userRepo.countAllByStatusAndRole(status,role);
-            }else if (role == UserRole.DOCTOR) {
-                return userRepo.countAllByStatus(status);
-            }
-            return 0;
-        } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-    }
 
-
-
-    public Integer countAllUnapprovedDoctors() throws InternalServerErrorException {
-        try{
-            return userRepo.countAllByApprovedFalseAndRole(UserRole.DOCTOR);
-        } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-    }
 
     public ResponseEntity<?> getDashboardData() throws InternalServerErrorException {
         try{
-            return ResponseEntity.ok().body(AdminDashboardResponse
-                    .builder()
-                    .totalUsers(countUsersByStatus(UserStatus.ACTIVE, UserRole.USER))
-                    .totalDoctors(countUsersByStatus(UserStatus.ACTIVE, UserRole.DOCTOR))
-                    .totalUnapprovedDoctors(countAllUnapprovedDoctors())
-                    .doctors(getAllUnapprovedDoctors())
-                    .build());
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalUsers", userRepo.countAllByStatusAndRole(UserStatus.ACTIVE,UserRole.USER));
+            response.put("totalDoctors", userRepo.countAllByStatusAndRole(UserStatus.ACTIVE,UserRole.DOCTOR));
+            response.put("unapprovedDoctors", userRepo.countAllByApprovedFalseAndRole(UserRole.DOCTOR));
+            response.put("unapprovedDoctorsList", getAllUnapprovedDoctors());
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
@@ -228,9 +204,9 @@ public class AdminService {
 
         try{
 
-            Integer activeUsers = countUsersByStatus(UserStatus.ACTIVE, UserRole.USER);
-            Integer suspendedUsers = countUsersByStatus(UserStatus.SUSPENDED, UserRole.USER);
-            Integer trashUsers = countUsersByStatus(UserStatus.DELETED, UserRole.USER);
+            Integer activeUsers = userRepo.countAllByStatusAndRole(UserStatus.ACTIVE,UserRole.USER);
+            Integer suspendedUsers = userRepo.countAllByStatusAndRole(UserStatus.SUSPENDED, UserRole.USER);
+            Integer trashUsers = userRepo.countAllByStatusAndRole(UserStatus.DELETED, UserRole.USER);
             List<UserResponse> userList = getUsersByStatus(status);
             Map<String, Object> response = new HashMap<>();
             response.put("activeUsers", activeUsers);
@@ -245,9 +221,9 @@ public class AdminService {
     public ResponseEntity<?> manageDoctor(UserStatus status) throws InternalServerErrorException {
         try{
 
-            Integer activeDoctor = countUsersByStatus(UserStatus.ACTIVE, UserRole.DOCTOR);
-            Integer suspendedDoctor = countUsersByStatus(UserStatus.SUSPENDED, UserRole.DOCTOR);
-            Integer trashDoctor = countUsersByStatus(UserStatus.DELETED, UserRole.DOCTOR);
+            Integer activeDoctor = userRepo.countAllByStatusAndRole(UserStatus.ACTIVE, UserRole.DOCTOR);
+            Integer suspendedDoctor = userRepo.countAllByStatusAndRole(UserStatus.SUSPENDED, UserRole.DOCTOR);
+            Integer trashDoctor = userRepo.countAllByStatusAndRole(UserStatus.DELETED, UserRole.DOCTOR);
             List<DoctorResponse> doctorsList = getDoctorsByStatus(status);
             Map<String, Object> response = new HashMap<>();
             response.put("activeDoctor", activeDoctor);

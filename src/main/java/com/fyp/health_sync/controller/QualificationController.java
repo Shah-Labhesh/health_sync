@@ -25,11 +25,7 @@ public class QualificationController {
 
     private final QualificationService qualificationService;
 
-    @Operation(summary = "Add qualification of doctor")
-    @PostMapping("/add-khaltiId/{doctorId}")
-    public ResponseEntity<?> addQualification(@PathVariable UUID doctorId, @RequestBody @Valid AddMoreDetailsDto details) throws BadRequestException, IOException, InternalServerErrorException {
-        return qualificationService.saveKhalti(details, doctorId);
-    }
+
 
     @Operation(summary = "Add qualification of doctor")
     @PostMapping("/{doctorId}")

@@ -61,21 +61,7 @@ public class QualificationService {
         }
     }
 
-    public ResponseEntity<?> saveKhalti(AddMoreDetailsDto details, UUID doctorId)
-            throws BadRequestException, InternalServerErrorException {
-        Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
-        if (doctor.getRole() != UserRole.DOCTOR) {
-            throw new BadRequestException("You are not authorized to add qualification");
-        }
-        try {
 
-            doctor.setKhaltiId(details.getKhaltiId());
-            userRepo.save(doctor);
-            return ResponseEntity.created(null).body(new SuccessResponse("Details added successfully"));
-        } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-    }
 
     public ResponseEntity<?> saveQualificationAuth(QualificationDto qualification) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
