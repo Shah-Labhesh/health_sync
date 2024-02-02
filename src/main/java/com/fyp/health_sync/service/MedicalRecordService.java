@@ -43,7 +43,7 @@ public class MedicalRecordService {
            MedicalRecords medicalRecords = MedicalRecords.builder()
                    .recordType(recordDto.getRecordType())
                    .record(recordDto.getRecord().getBytes())
-                   .recordText(recordDto.getRecordText())
+                   .recordCreatedDate(recordDto.getRecordCreatedDate())
                    .selfAdded(true)
                    .user(user)
                    .createdAt(LocalDateTime.now())
@@ -71,7 +71,7 @@ public class MedicalRecordService {
             MedicalRecords medicalRecords = MedicalRecords.builder()
                     .recordType(recordDto.getRecordType())
                     .record(recordDto.getRecord().getBytes())
-                    .recordText(recordDto.getRecordText())
+                    .recordCreatedDate(recordDto.getRecordCreatedDate())
                     .selfAdded(false)
                     .user(patient)
                     .doctor(doctor)
@@ -136,8 +136,8 @@ public class MedicalRecordService {
         if (record.getRecord() != null) {
             records.get().setRecord(record.getRecord().getBytes());
         }
-        if (record.getRecordText() != null) {
-            records.get().setRecordText(record.getRecordText());
+        if (record.getRecordCreatedDate() != null) {
+            records.get().setRecordCreatedDate(record.getRecordCreatedDate());
         }
         if (record.getRecordType() != null) {
             records.get().setRecordType(record.getRecordType());

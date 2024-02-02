@@ -21,7 +21,7 @@ public class SpecialityResponse {
         return SpecialityResponse.builder()
                 .id(speciality.getId())
                 .name(speciality.getName())
-                .image(speciality.getImage() != null ? "speciality/"+speciality.getId() : null)
+                .image(speciality.getImage() != null ? "/files/speciality/"+speciality.getId() : null)
                 .build();
     }
 }

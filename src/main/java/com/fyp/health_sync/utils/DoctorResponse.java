@@ -61,7 +61,7 @@ public class DoctorResponse {
                 .accountStatus(doctor.getStatus())
                 .verified(doctor.getIsVerified())
                 .khaltiId(doctor.getKhaltiId())
-                .avatar(doctor.getProfilePicture() != null ? "get-avatar/" + doctor.getId() : null)
+                .avatar(doctor.getProfilePicture() != null ? "/files/get-avatar/" + doctor.getId() : null)
                 .build();
     }
 

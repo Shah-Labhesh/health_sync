@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Data
@@ -20,43 +21,50 @@ public class RecordResponse {
     private UUID id;
     private String recordType;
     private String record;
-    private String recordText;
+    private String recordCreatedDate;
     private boolean selfAdded;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
-    private Users user;
-    private Users doctor;
+    private UserResponse user;
+    private DoctorResponse doctor;
 
     public RecordResponse castToResponse(MedicalRecords record){
         if (record == null) {
             return null;
         }
-        if (record.getRecordType() == RecordType.DOCUMENT) {
+        if (recordType(record.getRecordType()) == RecordType.PDF) {
             return RecordResponse.builder()
                     .id(record.getId())
-                    .recordType(record.getRecordType().toString())
-                    .record(record.getRecord() != null ? "pdf-record/" + record.getId() : null)
-                    .recordText(record.getRecordText())
+                    .recordType(record.getRecordType())
+                    .record(record.getRecord() != null ? "/files/pdf-record/" + record.getId() : null)
+                    .recordCreatedDate(record.getRecordCreatedDate())
                     .selfAdded(record.isSelfAdded())
                     .createdAt(record.getCreatedAt())
                     .updatedAt(record.getUpdatedAt())
                     .deletedAt(record.getDeletedAt())
-                    .user(record.getUser())
-                    .doctor(record.getDoctor())
+                    .user(record.getUser() != null ? new UserResponse().castToResponse(record.getUser()) : null)
+                    .doctor(record.getDoctor() != null ? new DoctorResponse().castToResponse(record.getDoctor()) : null)
                     .build();
         }
         return RecordResponse.builder()
                 .id(record.getId())
-                .recordType(record.getRecordType().toString())
-                .record(record.getRecord() != null ? "image-record/"+ record.getId() : null)
-                .recordText(record.getRecordText())
+                .recordType(record.getRecordType())
+                .record(record.getRecord() != null ? "/files/image-record/"+ record.getId() : null)
+                .recordCreatedDate(record.getRecordCreatedDate())
                 .selfAdded(record.isSelfAdded())
                 .createdAt(record.getCreatedAt())
                 .updatedAt(record.getUpdatedAt())
                 .deletedAt(record.getDeletedAt())
-                .user(record.getUser())
-                .doctor(record.getDoctor())
+                .user(record.getUser() != null ? new UserResponse().castToResponse(record.getUser()) : null)
+                .doctor(record.getDoctor() != null ? new DoctorResponse().castToResponse(record.getDoctor()) : null)
                 .build();
+    }
+
+    public RecordType recordType(String recordType) {
+        if (Objects.equals(recordType, "PDF")) {
+            return RecordType.PDF;
+        }
+        return RecordType.IMAGE;
     }
 }

@@ -19,8 +19,8 @@ public class AddMedicalRecordDto {
             enumClass = RecordType.class,
             message = "Record type should be one of the following: IMAGE,DOCUMENT,TEXT"
     )
-    private RecordType recordType;
+    private String recordType;
     private MultipartFile record;
     @Size(min = 20, max = 1000, message = "Record text should be between 20 to 1000 characters")
-    private String recordText;
+    private String recordCreatedDate;
 }

@@ -30,7 +30,7 @@ public class QualificationResponse {
                 .qualification(qualification.getQualification())
                 .institute(qualification.getInstitute())
                 .passOutYear(qualification.getPassOutYear().toString())
-                .certificate(qualification.getCertificate() != null ? "certificate/"+qualification.getId() : null)
+                .certificate(qualification.getCertificate() != null ? "/files/certificate/"+qualification.getId() : null)
                 .doctor(qualification.getDoctor() != null ? new DoctorResponse().castToResponse(qualification.getDoctor()) : null)
                 .build();
     }

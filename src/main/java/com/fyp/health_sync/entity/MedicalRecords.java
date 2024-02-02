@@ -26,11 +26,10 @@ public class MedicalRecords {
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(updatable = false, nullable = false)
     private UUID id;
-    @Enumerated (EnumType.STRING)
-    private RecordType recordType;
+    private String recordType;
     @Lob
     private byte[] record;
-    private String recordText;
+    private String recordCreatedDate;
     private boolean selfAdded;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

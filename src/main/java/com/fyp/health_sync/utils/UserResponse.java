@@ -47,7 +47,7 @@ public class UserResponse {
                 .deletedAt(user.getDeletedAt())
                 .accountStatus(user.getStatus())
                 .verified(user.getIsVerified())
-                .avatar(user.getProfilePicture() != null ? "get-avatar/" + user.getId() : null)
+                .avatar(user.getProfilePicture() != null ? "/files/get-avatar/" + user.getId() : null)
                 .role(user.getRole())
                 .build();
     }
