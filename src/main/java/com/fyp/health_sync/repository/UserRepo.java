@@ -38,7 +38,4 @@ public interface UserRepo extends JpaRepository<Users, UUID> {
 
     Integer countAllByApprovedFalseAndRole(UserRole userRole);
 
-//    void deleteById(UUID id);
-
-
 }

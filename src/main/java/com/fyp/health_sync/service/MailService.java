@@ -1,6 +1,7 @@
 package com.fyp.health_sync.service;
 
 
+import com.fyp.health_sync.exception.InternalServerErrorException;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.*;
@@ -22,7 +23,7 @@ public class MailService {
     @Value("${spring.mail.username}")
     private String from;
 
-    public void sendMail(String to, String subject, String text) {
+    public void sendMail(String to, String subject, String text) throws InternalServerErrorException {
 
 
         JavaMailSenderImpl senderImpl = (JavaMailSenderImpl) mailSender;
@@ -45,14 +46,14 @@ public class MailService {
             transport.close();
         } catch (Exception e) {
             System.out.println("Error sending email: " + e.getMessage());
-            throw new RuntimeException(e);
+            throw new InternalServerErrorException(e.getMessage());
         }
 
 
     }
 
     @Async
-    public void sendEmail(String name, String email, String otp, String title, String request) {
+    public void sendEmail(String name, String email, String otp, String title, String request) throws InternalServerErrorException {
         String subject = "Health sync - "+ title;
         String message = generateEmailTemplate(title,request, name, otp);
         sendMail(email, subject, message);

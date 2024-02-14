@@ -1,6 +1,8 @@
 package com.fyp.health_sync.controller;
 
 
+import com.fyp.health_sync.exception.BadRequestException;
+import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.ContactSupportService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -21,17 +23,17 @@ public class ContactController {
     private final ContactSupportService contactSupportService;
 
     @PostMapping
-    public ResponseEntity<?> contactSupport(String email, String message) {
+    public ResponseEntity<?> contactSupport(String email, String message) throws BadRequestException, InternalServerErrorException {
         return contactSupportService.contactSupport(email, message);
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllMessages() {
+    public ResponseEntity<?> getAllMessages() throws InternalServerErrorException {
         return contactSupportService.getAllMessages();
     }
 
     @PostMapping("/response")
-    public ResponseEntity<?> responseMessage(String responseMessage, UUID id) {
+    public ResponseEntity<?> responseMessage(String responseMessage, UUID id) throws InternalServerErrorException {
         return contactSupportService.responseMessage(responseMessage, id);
     }
 }

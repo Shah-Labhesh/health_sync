@@ -1,15 +1,11 @@
 package com.fyp.health_sync.service;
 
 
-import com.fyp.health_sync.entity.MedicalRecords;
-import com.fyp.health_sync.entity.Qualifications;
-import com.fyp.health_sync.entity.Speciality;
-import com.fyp.health_sync.entity.Users;
+import com.fyp.health_sync.entity.*;
+import com.fyp.health_sync.enums.RecordType;
 import com.fyp.health_sync.exception.BadRequestException;
-import com.fyp.health_sync.repository.MedicalRecordRepo;
-import com.fyp.health_sync.repository.QualificationRepo;
-import com.fyp.health_sync.repository.SpecialityRepo;
-import com.fyp.health_sync.repository.UserRepo;
+import com.fyp.health_sync.exception.InternalServerErrorException;
+import com.fyp.health_sync.repository.*;
 import com.fyp.health_sync.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
@@ -26,22 +22,28 @@ import java.util.zip.DataFormatException;
 @RequiredArgsConstructor
 public class MultipartFileService {
 
-    private  final QualificationRepo qualificationRepo;
+    private final QualificationRepo qualificationRepo;
     private final MedicalRecordRepo medicalRecordRepo;
     private final UserRepo userRepo;
     private final SpecialityRepo specialityRepo;
+    private final PrescriptionRepo prescriptionRepo;
 
-    public ResponseEntity<?> getAvatarById(UUID id) throws BadRequestException, DataFormatException, IOException {
-        Users user = userRepo.findById(id).orElseThrow(() -> new BadRequestException("User not found"));
+    public ResponseEntity<?> getAvatarById(UUID id) throws BadRequestException, InternalServerErrorException {
+        try {
+            Users user = userRepo.findById(id).orElseThrow(() -> new BadRequestException("User not found"));
 
-            return buildImageResponse(user.getProfilePicture(), user.getName());
+            return buildImageResponse(ImageUtils.decompress(user.getProfilePicture()), user.getName());
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
 
     }
 
     private ResponseEntity<?> buildImageResponse(byte[] imageBytes, String filename) {
         ByteArrayResource resource = new ByteArrayResource(imageBytes);
-
-
+        MediaType mediaType = MediaType.IMAGE_PNG;
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
@@ -49,48 +51,89 @@ public class MultipartFileService {
     }
 
 
+    public ResponseEntity<?> getCertificate(UUID id) throws BadRequestException,  InternalServerErrorException {
+        try {
+            Qualifications qualifications = qualificationRepo.findById(id).orElseThrow(() -> new BadRequestException("Qualification not found"));
+            return buildImageResponse(ImageUtils.decompress(qualifications.getCertificate()), qualifications.getInstitute());
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
 
+    public ResponseEntity<?> getImageRecord(UUID id) throws BadRequestException, DataFormatException, InternalServerErrorException {
+try {
+    MedicalRecords medicalRecord = medicalRecordRepo.findById(id).orElseThrow(() -> new BadRequestException("Record not found"));
+    return buildImageResponse(ImageUtils.decompress(medicalRecord.getRecord()), medicalRecord.getId().toString());
+}
+catch (BadRequestException e) {
+    throw new BadRequestException(e.getMessage());
+}
+catch (Exception e) {
+    throw new InternalServerErrorException(e.getMessage());
+}
+    }
 
-    public ResponseEntity<?> getCertificate(UUID id) throws BadRequestException {
+    public ResponseEntity<?> getPdfRecord(UUID id) throws BadRequestException, InternalServerErrorException {
 
-            Qualifications qualifications = qualificationRepo.findById(id).orElseThrow( () -> new BadRequestException("Qualification not found"));
+        try {
+            MedicalRecords medicalRecord = medicalRecordRepo.findById(id).orElseThrow(() -> new BadRequestException("Record not found"));
+            ByteArrayResource resource = new ByteArrayResource(ImageUtils.decompress(medicalRecord.getRecord()));
 
-
-
-            return buildImageResponse(qualifications.getCertificate(), qualifications.getInstitute());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + medicalRecord.getUser().getName() + "\"")
+                    .body(resource);
+        }
+        catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
 
     }
 
-    public ResponseEntity<?> getImageRecord(UUID id) throws BadRequestException {
+    public ResponseEntity<?> getSpecialityImage(UUID id) throws BadRequestException, InternalServerErrorException {
 
-        MedicalRecords medicalRecord = medicalRecordRepo.findById(id).orElseThrow( () -> new BadRequestException("Record not found"));
+        try {
 
+            Speciality speciality = specialityRepo.findById(id).orElseThrow(() -> new BadRequestException("Speciality not found"));
 
-        return buildImageResponse(medicalRecord.getRecord(), medicalRecord.getId().toString());
-
-    }
-
-    public ResponseEntity<?> getPdfRecord(UUID id) throws BadRequestException {
-
-        MedicalRecords medicalRecord = medicalRecordRepo.findById(id).orElseThrow( () -> new BadRequestException("Record not found"));
-
-        ByteArrayResource resource = new ByteArrayResource(medicalRecord.getRecord());
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + medicalRecord.getId() + "\"")
-                .body(resource);
+            return buildImageResponse(ImageUtils.decompress(speciality.getImage()), speciality.getName());
+        }
+        catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
 
     }
 
-    public ResponseEntity<?> getSpecialityImage(UUID id) throws BadRequestException, DataFormatException, IOException {
+    public ResponseEntity<?> getPrescription(UUID id) throws BadRequestException, InternalServerErrorException {
+       try{
+           Prescriptions prescription = prescriptionRepo.findById(id).orElseThrow(() -> new BadRequestException("Prescription not found"));
+           if (prescription.getRecordType().equals(RecordType.IMAGE.name())) {
+               return buildImageResponse(prescription.getPrescription(), prescription.getUser().getName());
+           } else {
+               ByteArrayResource resource = new ByteArrayResource(prescription.getPrescription());
 
-        Speciality speciality  = specialityRepo.findById(id).orElseThrow( () -> new BadRequestException("Speciality not found"));
+               return ResponseEntity.ok()
+                       .contentType(MediaType.APPLICATION_PDF)
+                       .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + prescription.getUser().getName() + "\"")
+                       .body(resource);
+           }
+       }
+         catch (BadRequestException e) {
+              throw new BadRequestException(e.getMessage());
+         }
+         catch (Exception e) {
+              throw new InternalServerErrorException(e.getMessage());
+         }
 
-        return buildImageResponse(ImageUtils.decompress(speciality.getImage()), speciality.getName());
 
     }
-
-
 
 }

@@ -40,26 +40,29 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/v1/user/upload-details/**"),
                                 new AntPathRequestMatcher("/api/v1/user/khaltiId/**"),
                                 new AntPathRequestMatcher("/socket/**"),
-                                new AntPathRequestMatcher("/app/**")
+                                new AntPathRequestMatcher("/app/**"),
+                                new AntPathRequestMatcher("/app/create-room"),
+                                new AntPathRequestMatcher("/topic/my-rooms"),
+                                new AntPathRequestMatcher("/topic/**")
                         ).permitAll()
                         .requestMatchers(
                                 new AntPathRequestMatcher("/api/v1/admin/**")
                         ).hasAuthority(UserRole.ADMIN.name())
-                        .requestMatchers(
-//                                new AntPathRequestMatcher("/api/v1/user/**"),
-                                new AntPathRequestMatcher("/api/v1/medical-record/**"),
-                                new AntPathRequestMatcher("/api/v1/qualification/**", HttpMethod.GET.name()),
-                                new AntPathRequestMatcher("/api/v1/doctor/doctor-details/**"),
-                                new AntPathRequestMatcher("/api/v1/slots/doctor-slots/**" , HttpMethod.GET.name()),
-                                new AntPathRequestMatcher("/api/v1/appointment/**")
-
-                        ).hasAuthority(UserRole.USER.name())
-                        .requestMatchers(
-                                new AntPathRequestMatcher("/api/v1/qualification/auth/**"),
-                                new AntPathRequestMatcher("/api/v1/slots"),
-                                new AntPathRequestMatcher("/api/v1/slots/**")
-//                                new AntPathRequestMatcher("/api/v1/user/current-user/**")
-                        ).hasAuthority(UserRole.DOCTOR.name())
+//                        .requestMatchers(
+////                                new AntPathRequestMatcher("/api/v1/user/**"),
+//                                new AntPathRequestMatcher("/api/v1/medical-record/**"),
+//                                new AntPathRequestMatcher("/api/v1/qualification/**", HttpMethod.GET.name()),
+//                                new AntPathRequestMatcher("/api/v1/doctor/doctor-details/**"),
+//                                new AntPathRequestMatcher("/api/v1/slots/doctor-slots/**" , HttpMethod.GET.name()),
+//                                new AntPathRequestMatcher("/api/v1/appointment/**")
+//
+//                        ).hasAuthority(UserRole.USER.name())
+//                        .requestMatchers(
+//                                new AntPathRequestMatcher("/api/v1/qualification/auth/**"),
+//                                new AntPathRequestMatcher("/api/v1/slots"),
+//                                new AntPathRequestMatcher("/api/v1/slots/**")
+////                                new AntPathRequestMatcher("/api/v1/user/current-user/**")
+//                        ).hasAuthority(UserRole.DOCTOR.name())
 
                         .anyRequest().authenticated()
                 ).exceptionHandling(exceptionHandling -> exceptionHandling

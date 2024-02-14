@@ -28,6 +28,8 @@ public class Appointments {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    private Integer appointmentId;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
@@ -40,12 +42,16 @@ public class Appointments {
     @JoinColumn(name = "slot", referencedColumnName = "id")
     private Slots slot;
     private String notes;
-
+    private Boolean isExpired;
     @OneToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "payment", referencedColumnName = "id")
     private Payment payment;
     @Enumerated (EnumType.STRING)
     private PaymentStatus paymentStatus;
+    private Integer appointmentFee;
+    private Integer platformCost;
+    private Integer totalFee;
+    private LocalDateTime reminderTime;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;

@@ -17,9 +17,11 @@ public interface SlotRepo extends JpaRepository<Slots, UUID> {
 
     List<Slots> findAllByDoctorId(UUID id);
 
-    List<Slots> findByDoctorIdAndIsBookedIsFalseAndSlotDateTimeIsGreaterThanEqual(UUID doctorId, LocalDateTime dateTime);
+    List<Slots> findByDoctorIdAndIsBookedIsFalseAndSlotDateTimeIsGreaterThan(UUID doctorId, LocalDateTime dateTime);
 
     Slots findBySlotDateTimeAndDoctor(LocalDateTime slotDateTime, Users doctor);
 
     List<Slots> findAllByDoctorIdOrderBySlotDateTime(UUID id);
+
+    List<Slots> findByDoctorIdAndSlotDateTimeIsGreaterThan(UUID doctorId, LocalDateTime now);
 }

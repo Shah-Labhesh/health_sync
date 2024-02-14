@@ -1,6 +1,7 @@
 package com.fyp.health_sync.service;
 
 import com.fyp.health_sync.dtos.AddSpecialityDto;
+import com.fyp.health_sync.dtos.UpdateSpecialityDto;
 import com.fyp.health_sync.entity.Speciality;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
@@ -8,7 +9,6 @@ import com.fyp.health_sync.repository.SpecialityRepo;
 import com.fyp.health_sync.utils.ImageUtils;
 import com.fyp.health_sync.utils.SpecialityResponse;
 import com.fyp.health_sync.utils.SuccessResponse;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class SpecialityService {
     private final SpecialityRepo specialityRepo;
 
     public ResponseEntity<?> getAllSpecialities() throws InternalServerErrorException {
-        try{
+        try {
             List<Speciality> specialities = specialityRepo.findAllByDeletedAtIsNull();
             List<SpecialityResponse> specialityResponses = new ArrayList<>();
             for (Speciality speciality : specialities) {
@@ -38,48 +38,46 @@ public class SpecialityService {
     }
 
     public ResponseEntity<?> addSpeciality(AddSpecialityDto speciality) throws InternalServerErrorException {
-        try{
-            byte[] compressedData = ImageUtils.compress(speciality.getImage().getBytes());
+        try {
 
-            byte[] decompressedData = ImageUtils.decompress(compressedData);
-
-            System.out.println("Original: " + speciality.getImage().getBytes().length + " bytes");
-            System.out.println("Compressed: " + compressedData.length + " bytes");
-            System.out.println("Decompressed: " + decompressedData.length + " bytes");
             Speciality newSpeciality = Speciality.builder()
                     .name(speciality.getName())
                     .image(ImageUtils.compress(speciality.getImage().getBytes()))
                     .build();
             specialityRepo.save(newSpeciality);
-            return ResponseEntity.ok(new SuccessResponse("Speciality added successfully"));
+            return ResponseEntity.ok(new SpecialityResponse().castToResponse(newSpeciality));
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
-    public ResponseEntity<?> updateSpeciality(AddSpecialityDto speciality, UUID specialityId) throws InternalServerErrorException {
-        try{
+    public ResponseEntity<?> updateSpeciality(UpdateSpecialityDto speciality, UUID specialityId) throws InternalServerErrorException, BadRequestException {
+        try {
             Speciality speciality1 = specialityRepo.findById(specialityId).orElseThrow(() -> new BadRequestException("Speciality not found"));
             if (speciality.getName() != null) {
                 speciality1.setName(speciality.getName());
             }
             if (speciality.getImage() != null) {
-                speciality1.setImage(speciality.getImage().getBytes());
+                speciality1.setImage(ImageUtils.compress(speciality.getImage().getBytes()));
             }
             speciality1.setUpdatedAt(LocalDateTime.now());
             specialityRepo.save(speciality1);
-            return ResponseEntity.ok(new SuccessResponse("Speciality updated successfully"));
+            return ResponseEntity.ok(new SpecialityResponse().castToResponse(speciality1));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
-    public ResponseEntity<?> deleteSpeciality(UUID specialityId) throws InternalServerErrorException {
-        try{
+    public ResponseEntity<?> deleteSpeciality(UUID specialityId) throws InternalServerErrorException, BadRequestException {
+        try {
             Speciality speciality1 = specialityRepo.findById(specialityId).orElseThrow(() -> new BadRequestException("Speciality not found"));
             speciality1.setDeletedAt(LocalDateTime.now());
             specialityRepo.save(speciality1);
             return ResponseEntity.ok(new SuccessResponse("Speciality deleted successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }

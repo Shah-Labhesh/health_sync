@@ -30,15 +30,10 @@ public class Notification {
     private String body;
     private NotificationType type;
     private boolean isRead;
-    private UUID userId;
-    private UUID doctorId;
-    private UUID patientId;
-    private UUID appointmentId;
-    private UUID prescriptionId;
-    private UUID medicalReportId;
-    private UUID chatRoomId;
-    private UUID paymentId;
-    private UUID reviewId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver", referencedColumnName = "id")
+    private Users receiver;
+    private UUID targetId;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime deletedAt;
 }

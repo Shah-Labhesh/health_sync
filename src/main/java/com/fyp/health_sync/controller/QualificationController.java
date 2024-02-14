@@ -25,8 +25,6 @@ public class QualificationController {
 
     private final QualificationService qualificationService;
 
-
-
     @Operation(summary = "Add qualification of doctor")
     @PostMapping("/{doctorId}")
     public ResponseEntity<?> addQualification(@PathVariable UUID doctorId,@ModelAttribute @RequestBody @Valid QualificationDto qualification) throws BadRequestException, IOException, InternalServerErrorException {
@@ -48,7 +46,7 @@ public class QualificationController {
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Add qualification of doctor after authentication")
     @PostMapping("/auth")
-    public ResponseEntity<?> addQualificationAuth(@RequestBody @Valid QualificationDto qualification) throws BadRequestException, InternalServerErrorException, ForbiddenException {
+    public ResponseEntity<?> addQualificationAuth(@ModelAttribute @RequestBody @Valid QualificationDto qualification) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         return qualificationService.saveQualificationAuth(qualification);
     }
 

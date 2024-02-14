@@ -3,6 +3,7 @@ package com.fyp.health_sync.dtos;
 
 import com.fyp.health_sync.enums.AppointmentType;
 import com.fyp.health_sync.validation.EnumValidator;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -25,4 +26,17 @@ public class TakeAppointmentDto {
     private String appointmentType;
     @Size(min = 10, max = 250, message = "notes must be between 10 and 250 digits")
     private String notes;
+    @NotBlank(message = "appointment fee cannot be empty")
+    @Min(value = 100, message = "appointment fee must be greater than 100")
+    private Integer appointmentFee;
+    @NotBlank(message = "platform cost cannot be empty")
+    @Min(value = 20, message = "platform cost must be greater than 20")
+    private Integer platformCost;
+    @NotBlank(message = "total fee cannot be empty")
+    @Min(value = 100, message = "total fee must be greater than 100")
+    private Integer totalFee;
+    @NotBlank(message = "reminder time cannot be empty")
+    @Min(value = 5, message = "reminder time must be greater than 5")
+    private Integer reminderTime;
+
 }

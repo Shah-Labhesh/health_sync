@@ -38,7 +38,6 @@ public class UserController {
         return userService.updateUser(user);
     }
 
-
     @Operation(summary = "Upload address of doctor")
     @PostMapping("/upload-address/{userId}")
     public ResponseEntity<?> uploadAddress(@PathVariable UUID userId, @RequestBody @Valid UploadAddressDto address) throws BadRequestException, JsonProcessingException, InternalServerErrorException {
@@ -57,5 +56,14 @@ public class UserController {
         return userService.saveKhalti(details, doctorId);
     }
 
+    @PostMapping("/firebase-token")
+    public ResponseEntity<?> saveFirebaseToken(@RequestBody @Valid String token) throws BadRequestException, InternalServerErrorException {
+        return userService.saveFirebaseToken(token);
+    }
+
+    @DeleteMapping("/firebase-token")
+    public ResponseEntity<?> deleteFirebaseToken(@RequestBody @Valid String token) throws BadRequestException, InternalServerErrorException {
+        return userService.deleteFirebaseToken(token);
+    }
 
 }

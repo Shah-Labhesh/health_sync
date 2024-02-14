@@ -43,8 +43,7 @@ public class AuthService implements UserDetailsService {
                 throw new UsernameNotFoundException("User not found.");
             }
             return new CustomUserDetails(user.getEmail(), user.getPassword(), user.getRoles());
-        }
-        else {
+        } else {
             throw new UsernameNotFoundException("User not found.");
         }
 
@@ -54,97 +53,120 @@ public class AuthService implements UserDetailsService {
         return authType == AuthType.Google || authType == AuthType.Twitter;
     }
 
-    public ResponseEntity<?> registerUser(RegisterUserDto userDetails) {
-        Users user = userRepo.findByEmail(userDetails.getEmail());
-        if (user != null) {
-            if (user.getStatus() == UserStatus.DELETED) {
-                throw new DataIntegrityViolationException("Email is in trash. Please contact admin");
-            } else {
-                throw new DataIntegrityViolationException("User already exists");
+    public ResponseEntity<?> registerUser(RegisterUserDto userDetails) throws InternalServerErrorException, BadRequestException {
+        try {
+            Users user = userRepo.findByEmail(userDetails.getEmail());
+            if (user != null) {
+                if (user.getStatus() == UserStatus.DELETED) {
+                    throw new DataIntegrityViolationException("Email is in trash. Please contact admin");
+                } else {
+                    throw new DataIntegrityViolationException("User already exists");
+                }
             }
-        }
 
-        BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
-        userDetails.setPassword(bCrypt.encode(userDetails.getPassword()));
-        Users newUser = Users.builder()
-                .id(UUID.randomUUID())
-                .name(userDetails.getName())
-                .email(userDetails.getEmail())
-                .password(userDetails.getPassword())
-                .createdAt(LocalDateTime.now())
-                .isVerified(false)
-                .approved(false)
-                .status(UserStatus.ACTIVE)
-                .role(userDetails.getRole())
-                .authType(AuthType.Traditional)
-                .build();
-        userRepo.save(newUser);
+            BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
+            userDetails.setPassword(bCrypt.encode(userDetails.getPassword()));
+            Users newUser = Users.builder()
+                    .id(UUID.randomUUID())
+                    .name(userDetails.getName())
+                    .email(userDetails.getEmail())
+                    .password(userDetails.getPassword())
+                    .createdAt(LocalDateTime.now())
+                    .isVerified(false)
+                    .approved(false)
+                    .status(UserStatus.ACTIVE)
+                    .role(userDetails.getRole())
+                    .authType(AuthType.Traditional)
+                    .build();
+            userRepo.save(newUser);
 
-        Users newUserDetails = userRepo.findByEmail(userDetails.getEmail());
+            Users newUserDetails = userRepo.findByEmail(userDetails.getEmail());
 
-        if (userDetails.getRole() == UserRole.USER) {
-            return ResponseEntity.created(null).body(new UserResponse().castToResponse(newUserDetails));
-        } else {
-            return ResponseEntity.created(null).body(new DoctorResponse().castToResponse(newUserDetails));
+            if (userDetails.getRole() == UserRole.USER) {
+                return ResponseEntity.created(null).body(new UserResponse().castToResponse(newUserDetails));
+            } else {
+                return ResponseEntity.created(null).body(new DoctorResponse().castToResponse(newUserDetails));
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
-    public ResponseEntity<?> performLogin(LoginDto credentials) throws BadRequestException {
-        Users user = userRepo.findByEmail(credentials.getEmail());
-        if (user != null) {
-            if (user.getStatus() == UserStatus.ACTIVE) {
-                if (validateAuthType(user.getAuthType())) {
-                    throw new BadRequestException("Please login with " + user.getAuthType());
-                }else{
-                    return loginUser(credentials);
-                }
+    public ResponseEntity<?> performLogin(LoginDto credentials) throws BadRequestException, InternalServerErrorException {
+        try {
+            Users user = userRepo.findByEmail(credentials.getEmail());
+            if (user != null) {
+                if (user.getStatus() == UserStatus.ACTIVE) {
+                    if (validateAuthType(user.getAuthType())) {
+                        throw new BadRequestException("Please login with " + user.getAuthType());
+                    } else {
+                        return loginUser(credentials);
+                    }
 
+                } else {
+                    throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                }
             } else {
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                throw new BadRequestException("Invalid Credentials");
             }
-        }  else {
-            throw new BadRequestException("Invalid Credentials");
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
-    private ResponseEntity<?> loginUser(LoginDto userDetails) throws BadRequestException {
-        Users user = userRepo.findByEmail(userDetails.getEmail());
-        if (passwordEncoder.matches(userDetails.getPassword(), user.getPassword())) {
-                if(user.getIsVerified()){
-            UserDetails loggedUser = loadUserByUsername(user.getEmail());
-            String token = jwtHelper.generateToken(loggedUser);
-            LoginResponse response = new LoginResponse();
-            response.setToken(token);
-            response.setVerified(user.getIsVerified());
-            response.setAuthType(user.getAuthType());
-            response.setStatus(user.getStatus());
-            response.setRole(user.getRole().name());
-            response.setMessage("User Login successfully");
-            return ResponseEntity.created(null).body(response);
-                }
-                else{
+    private ResponseEntity<?> loginUser(LoginDto userDetails) throws BadRequestException, InternalServerErrorException {
+        try {
+            Users user = userRepo.findByEmail(userDetails.getEmail());
+            if (passwordEncoder.matches(userDetails.getPassword(), user.getPassword())) {
+                if (user.getIsVerified()) {
+                    UserDetails loggedUser = loadUserByUsername(user.getEmail());
+                    String token = jwtHelper.generateToken(loggedUser);
+                    LoginResponse response = new LoginResponse();
+                    response.setToken(token);
+                    response.setVerified(user.getIsVerified());
+                    response.setAuthType(user.getAuthType());
+                    response.setStatus(user.getStatus());
+                    response.setRole(user.getRole().name());
+                    response.setMessage("User Login successfully");
+                    return ResponseEntity.created(null).body(response);
+                } else {
                     throw new BadRequestException("Please verify your email before login.");
                 }
 
-        } else {
-            throw new BadRequestException("Invalid Credentials");
+            } else {
+                throw new BadRequestException("Invalid Credentials");
+            }
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
-    public ResponseEntity<?> performGoogleAuth(String name, String email) throws BadRequestException {
-        Users user = userRepo.findByEmail(email);
-        if (user != null){
-            if (user.getStatus() == UserStatus.ACTIVE){
-               if (user.getAuthType() == AuthType.Google){
-                  return googleLogin(email);
-               }else{
-                   throw new BadRequestException("Please login by " + user.getAuthType());
-               }
-            }else{
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+    public ResponseEntity<?> performGoogleAuth(String name, String email) throws BadRequestException, InternalServerErrorException {
+        try {
+            Users user = userRepo.findByEmail(email);
+            if (user != null) {
+                if (user.getStatus() == UserStatus.ACTIVE) {
+                    if (user.getAuthType() == AuthType.Google) {
+                        return googleLogin(email);
+                    } else {
+                        throw new BadRequestException("Please login by " + user.getAuthType());
+                    }
+                } else {
+                    throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                }
+            } else {
+                return registerGoogleUser(name, email);
             }
-        }else{
-            return registerGoogleUser(name, email);
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
@@ -170,6 +192,7 @@ public class AuthService implements UserDetailsService {
                 .isVerified(true)
                 .status(UserStatus.ACTIVE)
                 .role(UserRole.USER)
+                .textNotification(true)
                 .authType(AuthType.Google)
                 .build();
         userRepo.save(newUser);
@@ -177,150 +200,198 @@ public class AuthService implements UserDetailsService {
     }
 
     public ResponseEntity<?> initiateEmailVerification(String email) throws BadRequestException, InternalServerErrorException {
+        try {
 
-        Users user = userRepo.findByEmail(email);
-        if (user != null) {
-            if (user.getIsVerified()) {
-                throw new BadRequestException("Email already verified");
-            }
+            Users user = userRepo.findByEmail(email);
+            if (user != null) {
+                if (user.getIsVerified()) {
+                    throw new BadRequestException("Email already verified");
+                }
 
-            if (user.getStatus() == UserStatus.ACTIVE) {
-                mailService.sendEmail(user.getName(), email, otpService.getOtp(email, OtpType.EMAIL_VERIFICATION), "Email Verification", "verify your email");
-                return ResponseEntity.created(null).body(new SuccessResponse("OTP sent successfully"));
+                if (user.getStatus() == UserStatus.ACTIVE) {
+                    mailService.sendEmail(user.getName(), email, otpService.getOtp(email, OtpType.EMAIL_VERIFICATION), "Email Verification", "verify your email");
+                    return ResponseEntity.created(null).body(new SuccessResponse("OTP sent successfully"));
+                } else {
+                    throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                }
             } else {
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                throw new BadRequestException("User not found");
             }
-        }
-        else {
-            throw new BadRequestException("User not found");
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> resendEmailVerification(String email) throws BadRequestException, InternalServerErrorException {
-        Users user = userRepo.findByEmail(email);
+        try {
+            Users user = userRepo.findByEmail(email);
 
-        if (user != null) {
-            if (user.getIsVerified()) {
-                throw new BadRequestException("Email already verified");
-            }
-            if (user.getStatus() != UserStatus.DELETED) {
-                mailService.sendEmail(user.getName(), email, otpService.getOtp(email, OtpType.EMAIL_VERIFICATION), "Resend Email Verification", "verify your email");
-                return ResponseEntity.created(null).body(new SuccessResponse("OTP re-sent successfully"));
+            if (user != null) {
+                if (user.getIsVerified()) {
+                    throw new BadRequestException("Email already verified");
+                }
+                if (user.getStatus() != UserStatus.DELETED) {
+                    mailService.sendEmail(user.getName(), email, otpService.getOtp(email, OtpType.EMAIL_VERIFICATION), "Resend Email Verification", "verify your email");
+                    return ResponseEntity.created(null).body(new SuccessResponse("OTP re-sent successfully"));
+                } else {
+                    throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                }
             } else {
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                throw new BadRequestException("User not found");
             }
-        } else {
-            throw new BadRequestException("User not found");
+        }
+        catch (BadRequestException e){
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e){
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
 
-    public ResponseEntity<?> verifyEmail(EmailVerificationDto emailVerificationDto) throws BadRequestException {
-        Users user = userRepo.findByEmail(emailVerificationDto.getEmail());
-        if (user != null) {
-            if (user.getStatus() == UserStatus.ACTIVE) {
-                if (user.getIsVerified()) {
-                    throw new BadRequestException("Email already verified");
-                } else {
-                    if (otpService.validateOtp(emailVerificationDto.getEmail(), emailVerificationDto.getOtp(), OtpType.EMAIL_VERIFICATION)) {
-                        user.setIsVerified(true);
-                        userRepo.save(user);
-                        return ResponseEntity.created(null).body(new SuccessResponse("Email verified successfully"));
-                    } else {
-                        throw new BadRequestException("Invalid OTP");
-                    }
-                }
-            } else {
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
-            }
-        }
-        else {
-            throw new BadRequestException("Email not registered");
-        }
+    public ResponseEntity<?> verifyEmail(EmailVerificationDto emailVerificationDto) throws BadRequestException, InternalServerErrorException {
+       try{
+           Users user = userRepo.findByEmail(emailVerificationDto.getEmail());
+           if (user != null) {
+               if (user.getStatus() == UserStatus.ACTIVE) {
+                   if (user.getIsVerified()) {
+                       throw new BadRequestException("Email already verified");
+                   } else {
+                       if (otpService.validateOtp(emailVerificationDto.getEmail(), emailVerificationDto.getOtp(), OtpType.EMAIL_VERIFICATION)) {
+                           user.setIsVerified(true);
+                           userRepo.save(user);
+                           return ResponseEntity.created(null).body(new SuccessResponse("Email verified successfully"));
+                       } else {
+                           throw new BadRequestException("Invalid OTP");
+                       }
+                   }
+               } else {
+                   throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+               }
+           } else {
+               throw new BadRequestException("Email not registered");
+           }
+       }
+         catch (BadRequestException e){
+              throw new BadRequestException(e.getMessage());
+         }
+         catch (Exception e){
+              throw new InternalServerErrorException(e.getMessage());
+         }
     }
 
     public ResponseEntity<?> initiateForgotPassword(String email) throws BadRequestException, InternalServerErrorException {
-        Users user = userRepo.findByEmail(email);
-        if (user != null) {
+        try {
+            Users user = userRepo.findByEmail(email);
+            if (user != null) {
 
-            if (user.getStatus() == UserStatus.ACTIVE) {
-                if (validateAuthType(user.getAuthType())){
-                    throw new BadRequestException("Please login with " + user.getAuthType());
+                if (user.getStatus() == UserStatus.ACTIVE) {
+                    if (validateAuthType(user.getAuthType())) {
+                        throw new BadRequestException("Please login with " + user.getAuthType());
+                    }
+                    mailService.sendEmail(user.getName(), email, otpService.getOtp(email, OtpType.PASSWORD_RESET), "Password Reset", "reset your password");
+
+                    return ResponseEntity.created(null).body(new SuccessResponse("OTP sent successfully"));
+                } else {
+                    throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
                 }
-                mailService.sendEmail(user.getName(), email, otpService.getOtp(email, OtpType.PASSWORD_RESET), "Password Reset", "reset your password");
-
-                return ResponseEntity.created(null).body(new SuccessResponse("OTP sent successfully"));
             } else {
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                throw new BadRequestException("Invalid Credentials");
             }
-        }else {
-            throw new BadRequestException("Invalid Credentials");
+        }
+        catch (BadRequestException e){
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e){
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> resendForgotPassword(String email) throws BadRequestException, InternalServerErrorException {
-        Users user = userRepo.findByEmail(email);
-        if (user != null) {
-            if (user.getStatus() == UserStatus.ACTIVE) {
-                if (validateAuthType(user.getAuthType())){
-                    throw new BadRequestException("Please login with " + user.getAuthType());
+        try{
+            Users user = userRepo.findByEmail(email);
+            if (user != null) {
+                if (user.getStatus() == UserStatus.ACTIVE) {
+                    if (validateAuthType(user.getAuthType())) {
+                        throw new BadRequestException("Please login with " + user.getAuthType());
+                    }
+                    mailService.sendEmail(user.getName(), email, otpService.getOtp(email, OtpType.PASSWORD_RESET), "Resend Password Reset", "reset your password");
+                    return ResponseEntity.created(null).body(new SuccessResponse("OTP re-sent successfully"));
+                } else {
+                    throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
                 }
-                mailService.sendEmail(user.getName(), email, otpService.getOtp(email, OtpType.PASSWORD_RESET), "Resend Password Reset", "reset your password");
-                return ResponseEntity.created(null).body(new SuccessResponse("OTP re-sent successfully"));
             } else {
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                throw new BadRequestException("Invalid Credentials");
             }
         }
-
-        else {
-            throw new BadRequestException("Invalid Credentials");
+        catch (BadRequestException e){
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e){
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     // verifyForgotPassword
-    public ResponseEntity<?> verifyForgotPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) throws BadRequestException {
-        Users user = userRepo.findByEmail(verifyForgotPasswordDto.getEmail());
-        if (user != null) {
-            if (user.getStatus() == UserStatus.ACTIVE) {
-                if (validateAuthType(user.getAuthType())){
-                    throw new BadRequestException("Please login with " + user.getAuthType());
-                }
-                if (otpService.validateOtp(verifyForgotPasswordDto.getEmail(), verifyForgotPasswordDto.getOtp(), OtpType.PASSWORD_RESET)) {
+    public ResponseEntity<?> verifyForgotPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) throws BadRequestException, InternalServerErrorException {
+        try{
+            Users user = userRepo.findByEmail(verifyForgotPasswordDto.getEmail());
+            if (user != null) {
+                if (user.getStatus() == UserStatus.ACTIVE) {
+                    if (validateAuthType(user.getAuthType())) {
+                        throw new BadRequestException("Please login with " + user.getAuthType());
+                    }
+                    if (otpService.validateOtp(verifyForgotPasswordDto.getEmail(), verifyForgotPasswordDto.getOtp(), OtpType.PASSWORD_RESET)) {
 
 
-                    return ResponseEntity.created(null).body(new SuccessResponse("OTP verified successfully"));
+                        return ResponseEntity.created(null).body(new SuccessResponse("OTP verified successfully"));
+                    } else {
+                        throw new BadRequestException("Invalid OTP");
+                    }
                 } else {
-                    throw new BadRequestException("Invalid OTP");
+                    throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
                 }
             } else {
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                throw new BadRequestException("Email not registered");
             }
         }
-        else {
-            throw new BadRequestException("Email not registered");
+        catch (BadRequestException e){
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e){
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 
-    public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) throws BadRequestException {
-        Users user = userRepo.findByEmail(resetPasswordDto.getEmail());
-        if (user != null) {
-            if (user.getStatus() == UserStatus.ACTIVE) {
-                if (validateAuthType(user.getAuthType())) {
-                    throw new BadRequestException("Please login with " + user.getAuthType());
-                }
-                if (otpService.validateOtp(resetPasswordDto.getEmail(), resetPasswordDto.getOtp(), OtpType.PASSWORD_RESET)) {
-                    user.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
-                    userRepo.save(user);
-                    return ResponseEntity.created(null).body(new SuccessResponse("Password reset successfully"));
+    public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) throws BadRequestException, InternalServerErrorException {
+        try{
+            Users user = userRepo.findByEmail(resetPasswordDto.getEmail());
+            if (user != null) {
+                if (user.getStatus() == UserStatus.ACTIVE) {
+                    if (validateAuthType(user.getAuthType())) {
+                        throw new BadRequestException("Please login with " + user.getAuthType());
+                    }
+                    if (otpService.validateOtp(resetPasswordDto.getEmail(), resetPasswordDto.getOtp(), OtpType.PASSWORD_RESET)) {
+                        user.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+                        userRepo.save(user);
+                        return ResponseEntity.created(null).body(new SuccessResponse("Password reset successfully"));
+                    } else {
+                        throw new BadRequestException("Invalid OTP");
+                    }
                 } else {
-                    throw new BadRequestException("Invalid OTP");
+                    throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
                 }
             } else {
-                throw new BadRequestException("User is " + user.getStatus() + " Please contact admin");
+                throw new BadRequestException("Email not registered");
             }
         }
-        else {
-            throw new BadRequestException("Email not registered");
+        catch (BadRequestException e){
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e){
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 

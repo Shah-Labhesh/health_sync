@@ -33,6 +33,7 @@ public class DoctorResponse {
     private double latitude;
     private double longitude;
     private String khaltiId;
+    private Boolean textNotification;
     private double avgRatings = 0;
     private int ratingCount = 0;
     private boolean isApproved;
@@ -57,6 +58,7 @@ public class DoctorResponse {
                 .latitude(doctor.getLatitude())
                 .longitude(doctor.getLongitude())
                 .experience(doctor.getExperience())
+                .textNotification(doctor.isTextNotification())
                 .isApproved(doctor.getApproved() != null ? doctor.getApproved() : false)
                 .accountStatus(doctor.getStatus())
                 .verified(doctor.getIsVerified())

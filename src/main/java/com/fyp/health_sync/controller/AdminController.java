@@ -2,10 +2,12 @@ package com.fyp.health_sync.controller;
 
 
 import com.fyp.health_sync.dtos.AddSpecialityDto;
+import com.fyp.health_sync.dtos.UpdateSpecialityDto;
 import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.AdminService;
+import com.fyp.health_sync.service.RatingService;
 import com.fyp.health_sync.service.SpecialityService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -25,6 +27,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final SpecialityService specialityService;
+    private final RatingService ratingService;
 
     @Operation(summary = "Update approved status of doctor")
     @PutMapping("/approve-status/{doctorId}/{status}")
@@ -93,13 +96,19 @@ public class AdminController {
 
     @Operation(summary = "update speciality")
     @PutMapping("/speciality/{specialityId}")
-    public ResponseEntity<?> updateSpeciality(@ModelAttribute @RequestBody AddSpecialityDto speciality, @PathVariable UUID specialityId) throws InternalServerErrorException {
+    public ResponseEntity<?> updateSpeciality(@ModelAttribute @RequestBody UpdateSpecialityDto speciality, @PathVariable UUID specialityId) throws InternalServerErrorException, BadRequestException {
         return specialityService.updateSpeciality(speciality, specialityId);
     }
 
     @Operation(summary = "delete speciality")
     @DeleteMapping("/speciality/{specialityId}")
-    public ResponseEntity<?> deleteSpeciality(@PathVariable UUID specialityId) throws InternalServerErrorException {
+    public ResponseEntity<?> deleteSpeciality(@PathVariable UUID specialityId) throws InternalServerErrorException, BadRequestException {
         return specialityService.deleteSpeciality(specialityId);
+    }
+
+    @Operation(summary = "rating of user or doctor")
+    @GetMapping("/ratings/{userId}/{ratingType}")
+    public ResponseEntity<?> getRatings(@PathVariable UUID userId, @PathVariable String ratingType) throws BadRequestException, InternalServerErrorException {
+        return ratingService.getRatings(userId, ratingType);
     }
 }

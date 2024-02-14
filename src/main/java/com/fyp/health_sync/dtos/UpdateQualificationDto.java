@@ -14,6 +14,6 @@ public class UpdateQualificationDto {
 
     private String qualification;
     private String institute;
-    private LocalDateTime passOutYear;
+    private String passOutYear;
     private MultipartFile certificate;
 }

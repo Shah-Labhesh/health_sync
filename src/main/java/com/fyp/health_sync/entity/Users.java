@@ -45,6 +45,7 @@ public class Users {
     private String experience;
     private Integer fee;
     private boolean isPopular;
+    private boolean textNotification;
     private String khaltiId;
     private Boolean approved = false;
     @Lob

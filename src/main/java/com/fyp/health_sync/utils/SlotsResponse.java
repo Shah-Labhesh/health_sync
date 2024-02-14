@@ -29,7 +29,7 @@ public class SlotsResponse {
         return SlotsResponse.builder()
                 .id(slots.getId())
                 .doctor(new DoctorResponse().castToResponse(slots.getDoctor()))
-                .slotDateTime(slots.getCreatedAt())
+                .slotDateTime(slots.getSlotDateTime())
                 .isBooked(slots.getIsBooked())
                 .createdAt(slots.getCreatedAt())
                 .updatedAt(slots.getUpdatedAt())

@@ -28,11 +28,12 @@ public class OtpService {
     }
 
     public String getOtp(String email, OtpType type) throws BadRequestException, InternalServerErrorException {
+        try {
+
         Users user = userRepo.findByEmail(email);
         if (user == null) {
             throw new BadRequestException("User not found");
         }
-       try {
            String otp = generateOTP();
            otpRepo.save(OTPs.builder()
                    .otp(otp)
@@ -44,7 +45,11 @@ public class OtpService {
                    .build()
            );
            return otp;
-       } catch (Exception e) {
+       }
+        catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e) {
            throw new InternalServerErrorException(e.getMessage());
        }
     }

@@ -17,15 +17,18 @@ public interface RatingRepo extends JpaRepository<RatingReviews, UUID> {
 
     List<RatingReviews> findAllByDoctor(Users doctor) ;
 
-    @Query("SELECT AVG(r.ratings) FROM RatingReviews r WHERE r.user = :user")
+    @Query("SELECT AVG(r.ratings) FROM RatingReviews r WHERE r.doctor = :user AND r.ratingType = 'DOCTOR' ")
     Double getAverageRatingForUser(@Param("user") Users user);
 
-
-    Integer countAllByDoctorId(UUID id);
+    Integer countAllByDoctorIdAndRatingType(UUID id, RatingType ratingType);
 
     RatingReviews findByUserAndDoctorAndRatingType(Users user, Users doctor, RatingType ratingType);
 
     RatingReviews findByUserAndAppointmentAndRatingType(Users user, Appointments appointment, RatingType ratingType);
 
     List<RatingReviews> findAllByDoctorAndRatingType(Users doctor, RatingType ratingType);
+
+    List<RatingReviews> findAllByUserAndRatingType(Users user, RatingType ratingType1);
+
+    List<RatingReviews> findAllByAppointmentAndRatingType(Appointments appointment, RatingType ratingType1);
 }

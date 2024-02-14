@@ -25,19 +25,19 @@ public class AuthenticationController {
     private final FirebaseAuthenticationService firebaseAuthenticationService;
 
     @PostMapping("/google-authenticate/{name}/{email}")
-    public ResponseEntity<?> authenticateWithGoogle(@PathVariable String name, @PathVariable String email) throws  BadRequestException {
+    public ResponseEntity<?> authenticateWithGoogle(@PathVariable String name, @PathVariable String email) throws BadRequestException, InternalServerErrorException {
         return firebaseAuthenticationService.authenticate(name, email);
     }
 
     @Operation(summary = "Register User traditionally")
     @PostMapping("/register-user")
-    public ResponseEntity<?> registerUser(@RequestBody @Valid RegisterUserDto userDetails) {
+    public ResponseEntity<?> registerUser(@RequestBody @Valid RegisterUserDto userDetails) throws InternalServerErrorException, BadRequestException {
         return  authService.registerUser(userDetails);
     }
 
     @Operation(summary = "Login User & Doctor traditionally")
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody @Valid LoginDto loginDto) throws BadRequestException {
+    public ResponseEntity<?> loginUser(@RequestBody @Valid LoginDto loginDto) throws BadRequestException, InternalServerErrorException {
         return authService.performLogin(loginDto);
     }
 
@@ -56,7 +56,7 @@ public class AuthenticationController {
 
     @Operation(summary = "verify email for all users")
     @PostMapping("/verify-email")
-    public ResponseEntity<?> verifyEmailVerification(@RequestBody @Valid EmailVerificationDto emailVerification) throws BadRequestException {
+    public ResponseEntity<?> verifyEmailVerification(@RequestBody @Valid EmailVerificationDto emailVerification) throws BadRequestException, InternalServerErrorException {
         return authService.verifyEmail(emailVerification);
     }
 
@@ -74,13 +74,13 @@ public class AuthenticationController {
 
     @Operation(summary = "verify otp for password reset")
     @PostMapping("/verify-password-reset")
-    public ResponseEntity<?> verifyPasswordReset(@RequestBody @Valid VerifyForgotPasswordDto verifyPassword) throws BadRequestException {
+    public ResponseEntity<?> verifyPasswordReset(@RequestBody @Valid VerifyForgotPasswordDto verifyPassword) throws BadRequestException, InternalServerErrorException {
         return authService.verifyForgotPassword(verifyPassword);
     }
 
     @Operation(summary = "reset password for user and doctor")
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword) throws BadRequestException {
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword) throws BadRequestException, InternalServerErrorException {
         return authService.resetPassword(resetPassword);
     }
 

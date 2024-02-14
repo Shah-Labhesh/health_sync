@@ -31,9 +31,11 @@ public class UpdateUserDto {
     private double longitude;
     private UUID speciality;
     private String experience;
-    @Min(value = 100, message = "Fee must be greater than 0")
+    @Min(value = 100, message = "Fee must be greater than 100")
     private Integer fee;
     private MultipartFile profileImage;
     @Pattern(regexp = "^(\\+)?(977)?([0-9]{10})$", message = "Invalid Khalti Id")
     private String khaltiId;
+
+    private Boolean textNotification;
 }

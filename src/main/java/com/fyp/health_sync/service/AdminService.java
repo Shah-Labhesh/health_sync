@@ -25,45 +25,48 @@ public class AdminService {
     private final UserRepo userRepo;
 
 
-
     public ResponseEntity<?> updateApprovedStatus(UUID id, Boolean status) throws BadRequestException, InternalServerErrorException {
-            Users doctor = userRepo.findById(id).orElseThrow( () -> new BadRequestException("Doctor not found"));
-
-            if (doctor.getStatus() != UserStatus.ACTIVE){
-                throw  new BadRequestException("Doctor account is not active");
-            }
-            if (doctor.getApproved() == status){
-                throw  new BadRequestException("Status already updated");
-            }
         try {
+            Users doctor = userRepo.findById(id).orElseThrow(() -> new BadRequestException("Doctor not found"));
+
+            if (doctor.getStatus() != UserStatus.ACTIVE) {
+                throw new BadRequestException("Doctor account is not active");
+            }
+            if (doctor.getApproved() == status) {
+                throw new BadRequestException("Status already updated");
+            }
 
             doctor.setApproved(status);
             userRepo.save(doctor);
 
             return ResponseEntity.ok(new SuccessResponse("Approval Status updated successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> updatePopularStatus(UUID id, Boolean status) throws BadRequestException, InternalServerErrorException {
-            Users doctor = userRepo.findById(id).orElseThrow( () -> new BadRequestException("Doctor not found"));
-
-            if (doctor.getStatus() != UserStatus.ACTIVE){
-                throw  new BadRequestException("Doctor account is not active");
-            }
-            if (!doctor.getApproved()){
-                throw  new BadRequestException("Doctor not approved yet");
-            }
-            if (doctor.isPopular() == status){
-                throw  new BadRequestException("Status already updated");
-            }
         try {
+            Users doctor = userRepo.findById(id).orElseThrow(() -> new BadRequestException("Doctor not found"));
+
+            if (doctor.getStatus() != UserStatus.ACTIVE) {
+                throw new BadRequestException("Doctor account is not active");
+            }
+            if (!doctor.getApproved()) {
+                throw new BadRequestException("Doctor not approved yet");
+            }
+            if (doctor.isPopular() == status) {
+                throw new BadRequestException("Status already updated");
+            }
 
             doctor.setPopular(status);
             userRepo.save(doctor);
 
             return ResponseEntity.ok(new SuccessResponse("Popular Status updated successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
@@ -71,22 +74,24 @@ public class AdminService {
 
     // delete user
     public ResponseEntity<?> changeAccountStatus(UUID id, UserStatus status) throws BadRequestException, InternalServerErrorException {
-            Users user = userRepo.findById(id).orElseThrow( () -> new BadRequestException("User not found"));
+        try {
+            Users user = userRepo.findById(id).orElseThrow(() -> new BadRequestException("User not found"));
 
-            if (user.getStatus() == UserStatus.DELETED){
-                throw  new BadRequestException("User already deleted");
+            if (user.getStatus() == UserStatus.DELETED) {
+                throw new BadRequestException("User already deleted");
             }
-            if (status == UserStatus.DELETED){
+            if (status == UserStatus.DELETED) {
                 user.setDeletedAt(LocalDateTime.now());
                 user.setStatus(UserStatus.DELETED);
-            }else{
+            } else {
                 user.setStatus(status);
             }
-        try{
 
             userRepo.save(user);
 
             return ResponseEntity.ok(new SuccessResponse("Account status updated successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
@@ -96,16 +101,18 @@ public class AdminService {
     // delete user permanently
     @Transactional
     public ResponseEntity<?> deleteUser(UUID userId) throws BadRequestException, InternalServerErrorException {
-            Users user = userRepo.findById(userId).orElseThrow( () -> new BadRequestException("User not found"));
+        try {
+            Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
 
-            if (user.getStatus() != UserStatus.DELETED){
-                throw  new BadRequestException("User not found in trash");
+            if (user.getStatus() != UserStatus.DELETED) {
+                throw new BadRequestException("User not found in trash");
             }
-        try{
 
             userRepo.delete(user);
 
             return ResponseEntity.ok(new SuccessResponse("User deleted successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
@@ -113,45 +120,50 @@ public class AdminService {
 
     // restore user
     public ResponseEntity<?> restoreUser(UUID userId) throws BadRequestException, InternalServerErrorException {
-           Users user = userRepo.findById(userId).orElseThrow( () -> new BadRequestException("User not found"));
+        try {
+        Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
 
-           if (user.getStatus() != UserStatus.DELETED){
-               throw  new BadRequestException("User not found in trash");
-           }
+        if (user.getStatus() != UserStatus.DELETED) {
+            throw new BadRequestException("User not found in trash");
+        }
 
-        try{
 
-           user.setDeletedAt(null);
-           user.setStatus(UserStatus.ACTIVE);
-           userRepo.save(user);
+            user.setDeletedAt(null);
+            user.setStatus(UserStatus.ACTIVE);
+            userRepo.save(user);
 
-           return ResponseEntity.ok(new SuccessResponse("User restored successfully"));
-       } catch (Exception e) {
-           throw new InternalServerErrorException(e.getMessage());
-       }
+            return ResponseEntity.ok(new SuccessResponse("User restored successfully"));
+        }
+        catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
 
     }
 
     //getAllSoftDeletedUsers
     private List<UserResponse> getUsersByStatus(UserStatus status) throws InternalServerErrorException {
         try {
-            List<Users> users = userRepo.findAllByStatusAndRole(status,UserRole.USER);
+            List<Users> users = userRepo.findAllByStatusAndRole(status, UserRole.USER);
             List<UserResponse> response = new ArrayList<>();
-            for (Users user: users) {
+            for (Users user : users) {
                 response.add(new UserResponse().castToResponse(user));
             }
 
             return response;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public List<DoctorResponse> getDoctorsByStatus(UserStatus status) throws InternalServerErrorException {
         try {
-            List<Users> users = userRepo.findAllByStatusAndRoleAndApproved(status,UserRole.DOCTOR, true);
+            List<Users> users = userRepo.findAllByStatusAndRoleAndApproved(status, UserRole.DOCTOR, true);
             List<DoctorResponse> response = new ArrayList<>();
-            for (Users user: users) {
+            for (Users user : users) {
                 response.add(new DoctorResponse().castToResponse(user));
             }
             return response;
@@ -161,8 +173,6 @@ public class AdminService {
     }
 
     //getAllSoftDeletedDoctors
-
-
 
 
     public List<DoctorResponse> getAllUnapprovedDoctors() throws InternalServerErrorException {
@@ -185,12 +195,11 @@ public class AdminService {
     }
 
 
-
     public ResponseEntity<?> getDashboardData() throws InternalServerErrorException {
-        try{
+        try {
             Map<String, Object> response = new HashMap<>();
-            response.put("totalUsers", userRepo.countAllByStatusAndRole(UserStatus.ACTIVE,UserRole.USER));
-            response.put("totalDoctors", userRepo.countAllByStatusAndRole(UserStatus.ACTIVE,UserRole.DOCTOR));
+            response.put("totalUsers", userRepo.countAllByStatusAndRole(UserStatus.ACTIVE, UserRole.USER));
+            response.put("totalDoctors", userRepo.countAllByStatusAndRole(UserStatus.ACTIVE, UserRole.DOCTOR));
             response.put("unapprovedDoctors", userRepo.countAllByApprovedFalseAndRole(UserRole.DOCTOR));
             response.put("unapprovedDoctorsList", getAllUnapprovedDoctors());
             return ResponseEntity.ok(response);
@@ -200,39 +209,33 @@ public class AdminService {
         }
     }
 
-    public ResponseEntity<?> manageUser(UserStatus status) throws  InternalServerErrorException {
+    public ResponseEntity<?> manageUser(UserStatus status) throws InternalServerErrorException {
 
-        try{
+        try {
 
-            Integer activeUsers = userRepo.countAllByStatusAndRole(UserStatus.ACTIVE,UserRole.USER);
-            Integer suspendedUsers = userRepo.countAllByStatusAndRole(UserStatus.SUSPENDED, UserRole.USER);
-            Integer trashUsers = userRepo.countAllByStatusAndRole(UserStatus.DELETED, UserRole.USER);
-            List<UserResponse> userList = getUsersByStatus(status);
             Map<String, Object> response = new HashMap<>();
-            response.put("activeUsers", activeUsers);
-            response.put("suspendedUsers", suspendedUsers);
-            response.put("trashUsers", trashUsers);
-            response.put("userList", userList);
+            response.put("activeUsers", userRepo.countAllByStatusAndRole(UserStatus.ACTIVE, UserRole.USER));
+            response.put("suspendedUsers", userRepo.countAllByStatusAndRole(UserStatus.SUSPENDED, UserRole.USER));
+            response.put("trashUsers", userRepo.countAllByStatusAndRole(UserStatus.DELETED, UserRole.USER));
+            response.put("userList", getUsersByStatus(status));
             return ResponseEntity.ok(response);
-        }catch (Exception e){
-           throw new InternalServerErrorException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
+
     public ResponseEntity<?> manageDoctor(UserStatus status) throws InternalServerErrorException {
-        try{
-
-            Integer activeDoctor = userRepo.countAllByStatusAndRole(UserStatus.ACTIVE, UserRole.DOCTOR);
-            Integer suspendedDoctor = userRepo.countAllByStatusAndRole(UserStatus.SUSPENDED, UserRole.DOCTOR);
-            Integer trashDoctor = userRepo.countAllByStatusAndRole(UserStatus.DELETED, UserRole.DOCTOR);
-            List<DoctorResponse> doctorsList = getDoctorsByStatus(status);
+        try {
             Map<String, Object> response = new HashMap<>();
-            response.put("activeDoctor", activeDoctor);
-            response.put("suspendedDoctor", suspendedDoctor);
-            response.put("trashDoctor", trashDoctor);
-            response.put("doctorsList", doctorsList);
+            response.put("activeDoctor", userRepo.countAllByStatusAndRole(UserStatus.ACTIVE, UserRole.DOCTOR));
+            response.put("suspendedDoctor", userRepo.countAllByStatusAndRole(UserStatus.SUSPENDED, UserRole.DOCTOR));
+            response.put("trashDoctor", userRepo.countAllByStatusAndRole(UserStatus.DELETED, UserRole.DOCTOR));
+            response.put("doctorsList", getDoctorsByStatus(status));
             return ResponseEntity.ok(response);
-        }catch (Exception e){
-           throw new InternalServerErrorException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
+
+
 }

@@ -2,6 +2,7 @@ package com.fyp.health_sync.repository;
 
 
 import com.fyp.health_sync.entity.ChatRoom;
+import com.fyp.health_sync.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,9 +12,9 @@ import java.util.UUID;
 @Repository
 public interface ChatRoomRepo extends JpaRepository<ChatRoom, UUID> {
 
-    List<ChatRoom> findAllByUserId(UUID user_id);
+    ChatRoom findByUserIdAndDoctorIdAndDeletedAtNull(UUID user_id, UUID doctor_id);
 
-    List<ChatRoom> findAllByDoctorId(UUID doctorId);
+    List<ChatRoom> findAllByUserOrDoctor(Users users, Users users1);
 
-    ChatRoom findByUserIdAndDoctorId(UUID user_id, UUID doctor_id);
+    ChatRoom findByIdAndAndDeletedAtNull(UUID id);
 }

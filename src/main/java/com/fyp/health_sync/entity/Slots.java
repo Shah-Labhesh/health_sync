@@ -29,6 +29,8 @@ public class Slots {
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
     private LocalDateTime slotDateTime;
+    private LocalDateTime endTime;
+    private Boolean isExpired;
     private Boolean isBooked;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

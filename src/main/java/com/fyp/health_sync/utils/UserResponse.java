@@ -31,6 +31,7 @@ public class UserResponse {
     private UserStatus accountStatus;
     private UserRole role;
     private AuthType authType;
+    private Boolean textNotification;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
@@ -47,6 +48,7 @@ public class UserResponse {
                 .deletedAt(user.getDeletedAt())
                 .accountStatus(user.getStatus())
                 .verified(user.getIsVerified())
+                .textNotification(user.isTextNotification())
                 .avatar(user.getProfilePicture() != null ? "/files/get-avatar/" + user.getId() : null)
                 .role(user.getRole())
                 .build();
