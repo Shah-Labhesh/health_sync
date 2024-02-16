@@ -44,19 +44,19 @@ public class SlotService {
             }
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
             LocalDateTime dateTime = LocalDateTime.parse(slot.getSlotDateTime(), formatter);
-            Slots slots1 = slotRepo.findBySlotDateTimeAndDoctor(dateTime, doctor);
-            Slots slots2 = slotRepo.findBySlotDateTimeAndDoctor(dateTime.plusHours(1), doctor);
+            Integer existingSlots = slotRepo.findOverlappingSlots(doctor.getId(), dateTime, dateTime.plusMinutes(30));
+
 
             // query for cannot create slot if the new slot is within 1 hour of the existing slot : pending
-
-
-            if (slots1 != null) {
+            if (existingSlots > 0) {
+                System.out.println("existingSlots = " + existingSlots);
                 throw new BadRequestException("You already have a slot at this time");
             }
 
 
             Slots slots = Slots.builder()
                     .slotDateTime(dateTime)
+                    .endTime(dateTime.plusMinutes(30))
                     .doctor(doctor)
                     .createdAt(LocalDateTime.now())
                     .isBooked(false)
@@ -89,8 +89,16 @@ public class SlotService {
             if (slots.getDoctor().getId() != doctor.getId()) {
                 throw new ForbiddenException("You are not authorized to update this slot");
             }
+
             if (slot.getSlotDateTime() != null) {
+                Integer existingSlots = slotRepo.findOverlappingSlots(doctor.getId(), slot.getSlotDateTime(), slot.getSlotDateTime().plusMinutes(30));
+                // query for cannot create slot if the new slot is within 1 hour of the existing slot : pending
+                if (existingSlots > 0) {
+                    System.out.println("existingSlots = " + existingSlots);
+                    throw new BadRequestException("You already have a slot at this time");
+                }
                 slots.setSlotDateTime(slot.getSlotDateTime());
+                slots.setEndTime(slot.getSlotDateTime().plusMinutes(30));
                 slots.setUpdatedAt(LocalDateTime.now());
             }
             slotRepo.save(slots);

@@ -2,6 +2,7 @@ package com.fyp.health_sync.controller;
 
 
 import com.fyp.health_sync.exception.BadRequestException;
+import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.ContactSupportService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,12 +29,12 @@ public class ContactController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllMessages() throws InternalServerErrorException {
+    public ResponseEntity<?> getAllMessages() throws InternalServerErrorException, BadRequestException, ForbiddenException {
         return contactSupportService.getAllMessages();
     }
 
     @PostMapping("/response")
-    public ResponseEntity<?> responseMessage(String responseMessage, UUID id) throws InternalServerErrorException {
+    public ResponseEntity<?> responseMessage(String responseMessage, UUID id) throws InternalServerErrorException, BadRequestException, ForbiddenException {
         return contactSupportService.responseMessage(responseMessage, id);
     }
 }

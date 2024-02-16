@@ -21,7 +21,7 @@ public class ContactSupportResponse {
     private String email;
     private String message;
     private LocalDateTime createdAt;
-    private Users user;
+    private UserResponse user;
     private String responseMessage;
 
     public ContactSupportResponse castToResponse(ContactSupport contactSupport) {
@@ -31,7 +31,7 @@ public class ContactSupportResponse {
                 .message(contactSupport.getMessage())
                 .createdAt(contactSupport.getCreatedAt())
                 .responseMessage(contactSupport.getResponseMessage())
-                .user(contactSupport.getUser())
+                .user(new UserResponse().castToResponse(contactSupport.getUser()))
                 .build();
     }
 }

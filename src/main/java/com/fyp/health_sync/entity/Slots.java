@@ -30,7 +30,6 @@ public class Slots {
     private Users doctor;
     private LocalDateTime slotDateTime;
     private LocalDateTime endTime;
-    private Boolean isExpired;
     private Boolean isBooked;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

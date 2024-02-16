@@ -7,7 +7,6 @@ import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.MessageService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -21,7 +20,6 @@ import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
-//@SecurityRequirement(name = "BearerAuth")
 public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
