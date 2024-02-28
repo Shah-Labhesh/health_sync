@@ -18,10 +18,10 @@ public class ChatRoomResponse {
     private String lastMessage;
     private UUID senderId;
     private String deletedBy;
-    private LocalDateTime lastMessageAt;
+    private String lastMessageAt;
     private String messageType;
-    private LocalDateTime createdAt;
-    private LocalDateTime deletedAt;
+    private String createdAt;
+    private String deletedAt;
     private DoctorResponse doctor;
     private UserResponse user;
 
@@ -30,11 +30,11 @@ public class ChatRoomResponse {
                 .id(chatRoom.getId())
                 .lastMessage(chatRoom.getLastMessage())
                 .senderId(chatRoom.getSenderId())
-                .deletedBy(chatRoom.getDeletedBy().toString())
-                .lastMessageAt(chatRoom.getLastMessageAt())
-                .messageType(chatRoom.getMessageType().toString())
-                .createdAt(chatRoom.getCreatedAt())
-                .deletedAt(chatRoom.getDeletedAt())
+                .deletedBy(chatRoom.getDeletedBy() != null ? chatRoom.getDeletedBy().toString() : null)
+                .lastMessageAt(chatRoom.getLastMessageAt()!=null?chatRoom.getLastMessageAt().toString():null)
+                .messageType(chatRoom.getMessageType() != null ? chatRoom.getMessageType().toString() : null)
+                .createdAt(chatRoom.getCreatedAt().toString())
+                .deletedAt(chatRoom.getDeletedAt()!=null?chatRoom.getDeletedAt().toString():null)
                 .doctor(new DoctorResponse().castToResponse(chatRoom.getDoctor()))
                 .user(new UserResponse().castToResponse(chatRoom.getUser()))
                 .build();

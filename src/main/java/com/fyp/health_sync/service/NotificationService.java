@@ -1,8 +1,8 @@
 package com.fyp.health_sync.service;
 
-import com.fyp.health_sync.entity.*;
+import com.fyp.health_sync.entity.Notification;
+import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.NotificationType;
-import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.*;
@@ -51,56 +51,56 @@ public class NotificationService {
             Map<String, Object> response = new HashMap<>();
             response.put("count", notificationRepo.countAllByUserAndRead(user, false));
             return ResponseEntity.ok(response);
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
 
     }
 
     public ResponseEntity<?> getNotifications() throws BadRequestException, InternalServerErrorException {
-        try{String authentication = SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            String authentication = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(authentication);
             if (user == null) {
                 throw new BadRequestException("User not found");
             }
-            List<Notification> notifications =  notificationRepo.findAllByReceiver(user);
+            List<Notification> notifications = notificationRepo.findAllByReceiver(user);
 
             notifications.forEach(notification -> notification.setReceiver(null));
             notifications.sort((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
-            return ResponseEntity.ok(notifications);}
-        catch (BadRequestException e) {
+            return ResponseEntity.ok(notifications);
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> markAsRead() throws BadRequestException, InternalServerErrorException {
-       try{ String email = SecurityContextHolder.getContext().getAuthentication().getName();
-           Users user = userRepo.findByEmail(email);
-           if (user == null) {
-               throw new BadRequestException("User not found");
-           }
-           for (Notification notification : notificationRepo.findAllByReceiverAndRead(user, false)
-           ) {
-               notification.setRead(true);
-               notificationRepo.save(notification);
-           }
-           return ResponseEntity.created(null).body("Notification marked as read");}
-       catch (BadRequestException e) {
-           throw new BadRequestException(e.getMessage());
-       }catch (Exception e) {
-           throw new InternalServerErrorException(e.getMessage());
-       }
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            Users user = userRepo.findByEmail(email);
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            for (Notification notification : notificationRepo.findAllByReceiverAndRead(user, false)
+            ) {
+                notification.setRead(true);
+                notificationRepo.save(notification);
+            }
+            return ResponseEntity.created(null).body("Notification marked as read");
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
     }
 
     public void sendNotification(UUID id, String message, NotificationType notificationType, UUID receiverId) throws BadRequestException, InternalServerErrorException {
-        try{Users receiver = userRepo.findById(receiverId).orElseThrow(() -> new BadRequestException("User not found"));
+        try {
+            Users receiver = userRepo.findById(receiverId).orElseThrow(() -> new BadRequestException("User not found"));
             Object target = null;
             switch (notificationType) {
                 case APPOINTMENT -> {
@@ -135,11 +135,9 @@ public class NotificationService {
                     .createdAt(LocalDateTime.now())
                     .body(message)
                     .build());
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
 

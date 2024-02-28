@@ -8,7 +8,6 @@ import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.RatingType;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
-import com.fyp.health_sync.repository.AppointmentRepo;
 import com.fyp.health_sync.repository.RatingRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.RatingResponse;
@@ -30,7 +29,6 @@ public class RatingService {
 
     private final RatingRepo ratingRepo;
     private final UserRepo userRepo;
-    private final AppointmentRepo appointmentRepo;
 
     public ResponseEntity<?> rate(UUID targetId, RatingDto rating) throws BadRequestException, InternalServerErrorException {
         try {
@@ -44,44 +42,19 @@ public class RatingService {
             RatingType ratingType = switch (rating.getRatingType()) {
                 case "DOCTOR" -> RatingType.DOCTOR;
                 case "USER" -> RatingType.USER;
-                case "APPOINTMENT" -> RatingType.APPOINTMENT;
                 default -> throw new BadRequestException("Invalid rating type");
             };
 
-            Object targetEntity;
-            if (ratingType == RatingType.DOCTOR || ratingType == RatingType.USER) {
-                targetEntity = userRepo.findById(targetId)
-                        .orElseThrow(() -> new BadRequestException("User not found"));
-            } else {
-                targetEntity = appointmentRepo.findById(targetId)
-                        .orElseThrow(() -> new BadRequestException("Appointment not found"));
-            }
-
-            RatingReviews ratingReviews = getRatingReviews(user, targetEntity, ratingType);
-            if (ratingReviews != null) {
-                ratingReviews.setRatings(rating.getRatings());
-                ratingReviews.setComment(rating.getComment());
-                ratingReviews.setUpdatedAt(LocalDateTime.now());
-                ratingRepo.save(ratingReviews);
-                return ResponseEntity.ok(new SuccessResponse(getRatingSuccessMessage(ratingType)));
-            }
+            Users targetEntity = userRepo.findById(targetId)
+                    .orElseThrow(() -> new BadRequestException("User not found"));
 
             ratingRepo.save(buildRatingReviews(user, targetEntity, ratingType, rating));
-            return ResponseEntity.ok(new SuccessResponse(getRatingSuccessMessage(ratingType)));
+            return ResponseEntity.created(null).body(new SuccessResponse(getRatingSuccessMessage(ratingType)));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
-    }
-
-    private RatingReviews getRatingReviews(Users user, Object targetEntity, RatingType ratingType) {
-        if (ratingType == RatingType.DOCTOR || ratingType == RatingType.USER) {
-            return ratingRepo.findByUserAndDoctorAndRatingType(user, (Users) targetEntity, ratingType);
-        } else if (ratingType == RatingType.APPOINTMENT) {
-            return ratingRepo.findByUserAndAppointmentAndRatingType(user, (Appointments) targetEntity, ratingType);
-        }
-        return null;
     }
 
     private RatingReviews buildRatingReviews(Users user, Object targetEntity, RatingType ratingType, RatingDto rating) {
@@ -94,8 +67,6 @@ public class RatingService {
 
         if (ratingType == RatingType.DOCTOR) {
             ratings.setDoctor((Users) targetEntity);
-        } else if (ratingType == RatingType.APPOINTMENT) {
-            ratings.setAppointment((Appointments) targetEntity);
         } else {
             ratings.setUser((Users) targetEntity);
         }
@@ -107,7 +78,6 @@ public class RatingService {
         return switch (ratingType) {
             case DOCTOR -> "Doctor rated successfully";
             case USER -> "User rated successfully";
-            case APPOINTMENT -> "Appointment rated successfully";
             default -> "Rating successful";
         };
     }
@@ -117,7 +87,6 @@ public class RatingService {
             RatingType ratingType1 = switch (ratingType) {
                 case "DOCTOR" -> RatingType.DOCTOR;
                 case "USER" -> RatingType.USER;
-                case "APPOINTMENT" -> RatingType.APPOINTMENT;
                 default -> throw new BadRequestException("Invalid rating type");
             };
             List<RatingResponse> response = new ArrayList<>();
@@ -129,9 +98,7 @@ public class RatingService {
                     response.add(new RatingResponse().castToResponse(rating));
                 }
                 return ResponseEntity.ok(response);
-            }
-
-            if (ratingType1 == RatingType.USER) {
+            }else {
                 Users user = userRepo.findById(targetId)
                         .orElseThrow(() -> new BadRequestException("User not found"));
                 for (RatingReviews rating : ratingRepo.findAllByUserAndRatingType(user, ratingType1)) {
@@ -140,17 +107,10 @@ public class RatingService {
                 return ResponseEntity.ok(response);
             }
 
-            Appointments appointment = appointmentRepo.findById(targetId)
-                    .orElseThrow(() -> new BadRequestException("Appointment not found"));
-            for (RatingReviews rating : ratingRepo.findAllByAppointmentAndRatingType(appointment, ratingType1)) {
-                response.add(new RatingResponse().castToResponse(rating));
-            }
-            return ResponseEntity.ok(response);
-        }
-        catch (BadRequestException e) {
+
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }

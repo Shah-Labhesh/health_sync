@@ -32,5 +32,10 @@ public class AppointmentController {
         return appointmentService.getAppointment();
     }
 
+    @GetMapping("/all-appointments")
+    public ResponseEntity<?> getAllAppointments() throws BadRequestException, InternalServerErrorException, ForbiddenException {
+        return appointmentService.getAllMyAppointment();
+    }
+
 
 }

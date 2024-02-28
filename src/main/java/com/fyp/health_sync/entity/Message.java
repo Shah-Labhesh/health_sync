@@ -33,7 +33,7 @@ public class Message {
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "chatRoom", referencedColumnName = "id")
     private ChatRoom chatRoom;
 }

@@ -246,9 +246,21 @@ public class MedicalRecordService {
             if (records.isEmpty()) {
                 throw new BadRequestException("Record not found");
             }
-            if (!records.get().getUser().getId().equals(user.getId())) {
+            if (records.get().getDeletedAt() != null) {
+                throw new BadRequestException("Record not found");
+            }
+            if (user.getRole() == UserRole.USER && records.get().isSelfAdded()){
+                if (!records.get().getUser().getId().equals(user.getId())) {
+                    throw new ForbiddenException("You are not authorized to update this record");
+                }
+            }else if (user.getRole() == UserRole.DOCTOR && !records.get().isSelfAdded()){
+                if (!records.get().getDoctor().getId().equals(user.getId())) {
+                    throw new ForbiddenException("You are not authorized to update this record");
+                }
+            }else{
                 throw new ForbiddenException("You are not authorized to update this record");
             }
+
             if (record.getRecord() != null) {
                 records.get().setRecord(ImageUtils.compress(record.getRecord().getBytes()));
             }
@@ -261,7 +273,7 @@ public class MedicalRecordService {
             records.get().setUpdatedAt(LocalDateTime.now());
             medicalRecordRepo.save(records.get());
 
-            return ResponseEntity.ok().body(new SuccessResponse("Record updated successfully"));
+            return ResponseEntity.ok().body(new RecordResponse().castToResponse(records.get()));
         }
         catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());

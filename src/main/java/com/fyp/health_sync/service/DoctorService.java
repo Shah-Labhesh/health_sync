@@ -188,13 +188,35 @@ public class DoctorService {
             if (doctor.getRole() != UserRole.DOCTOR) {
                 throw new BadRequestException("This user is not a doctor");
             }
-            List<RatingReviews> list = ratingRepo.findAllByDoctorAndRatingType(doctor, RatingType.DOCTOR);
+            List<RatingReviews> list =  new ArrayList<>();
             List<RatingResponse> response = new ArrayList<>();
 
+            for (RatingReviews rating : ratingRepo.findAllByDoctorAndRatingType(doctor, RatingType.DOCTOR)
+            ) {
+                list.add(rating);
+            }
+
+            // at first group by user and then add latest rating to list
             for (RatingReviews rating : list
             ) {
-                response.add(new RatingResponse().castToResponse(rating));
+                boolean isFound = false;
+                for (RatingResponse ratingResponse : response
+                ) {
+                    if (ratingResponse.getUser().getId().equals(rating.getUser().getId())) {
+                        isFound = true;
+                        if (ratingResponse.getCreatedAt().isBefore(rating.getCreatedAt())) {
+                            ratingResponse.setCreatedAt(rating.getCreatedAt());
+                            ratingResponse.setRatings(rating.getRatings());
+                            ratingResponse.setComment(rating.getComment());
+                        }
+                        break;
+                    }
+                }
+                if (!isFound) {
+                    response.add(new RatingResponse().castToResponse(rating));
+                }
             }
+
 
             return ResponseEntity.ok(response);
         }

@@ -4,5 +4,4 @@ public enum RatingType {
 
     USER,
     DOCTOR,
-    APPOINTMENT,
 }

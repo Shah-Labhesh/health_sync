@@ -4,10 +4,11 @@ package com.fyp.health_sync.utils;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.AuthType;
 import com.fyp.health_sync.enums.UserStatus;
-import com.fyp.health_sync.repository.RatingRepo;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -22,9 +23,9 @@ public class DoctorResponse {
     private String speciality;
     private String experience;
     private AuthType authType;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
+    private String createdAt;
+    private String updatedAt;
+    private String deletedAt;
     private boolean verified;
     private UserStatus accountStatus;
     private Integer fee;
@@ -40,7 +41,7 @@ public class DoctorResponse {
     private boolean isFavorite;
 
 
-    public DoctorResponse castToResponse(Users doctor){
+    public DoctorResponse castToResponse(Users doctor) {
         if (doctor == null) {
             return null;
         }
@@ -49,9 +50,9 @@ public class DoctorResponse {
                 .name(doctor.getName())
                 .email(doctor.getEmail())
                 .authType(doctor.getAuthType())
-                .createdAt(doctor.getCreatedAt())
-                .updatedAt(doctor.getUpdatedAt())
-                .deletedAt(doctor.getDeletedAt())
+                .createdAt(doctor.getCreatedAt().toString())
+                .updatedAt(doctor.getUpdatedAt() != null ? doctor.getUpdatedAt().toString() : null)
+                .deletedAt(doctor.getDeletedAt() != null ? doctor.getDeletedAt().toString() : null)
                 .fee(doctor.getFee())
                 .address(doctor.getAddress())
                 .speciality(doctor.getSpeciality() != null ? doctor.getSpeciality().getName() : null)

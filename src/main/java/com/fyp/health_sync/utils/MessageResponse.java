@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 
@@ -22,9 +21,10 @@ public class MessageResponse {
     private String file;
     private UUID senderId;
     private UUID receiverId;
+    private boolean me;
     private MessageType messageType;
-    private LocalDateTime createdAt;
-    private LocalDateTime deletedAt;
+    private String createdAt;
+    private String deletedAt;
 
 
     private ChatRoomResponse chatRoom;
@@ -37,8 +37,9 @@ public class MessageResponse {
                 .senderId(message.getSenderId())
                 .receiverId(message.getReceiverId())
                 .messageType(message.getMessageType())
-                .createdAt(message.getCreatedAt())
-                .deletedAt(message.getDeletedAt())
+
+                .createdAt(message.getCreatedAt().toString())
+                .deletedAt(message.getDeletedAt() != null ? message.getDeletedAt().toString() : null)
                 .chatRoom(new ChatRoomResponse().castToResponse(message.getChatRoom()))
                 .build();
     }

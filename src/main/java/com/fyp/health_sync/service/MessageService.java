@@ -1,6 +1,7 @@
 package com.fyp.health_sync.service;
 
 
+import com.fyp.health_sync.config.JwtHelper;
 import com.fyp.health_sync.entity.ChatRoom;
 import com.fyp.health_sync.entity.Message;
 import com.fyp.health_sync.entity.Users;
@@ -32,12 +33,14 @@ public class MessageService {
     private final ChatRoomRepo chatRoomRepo;
     private final UserRepo userRepo;
     private final MessageRepo messageRepo;
+    private final JwtHelper jwtHelper;
 
 
-    public ResponseEntity<?> createChatRoom(UUID doctorId) throws BadRequestException {
-        String user = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ResponseEntity<?> createChatRoom(UUID doctorId,String token) throws BadRequestException {
+        // String user = SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = jwtHelper.getUsernameFromToken(token);
 
-        Users users = userRepo.findByEmail(user);
+        Users users = userRepo.findByEmail(email);
 
         if (users != null) {
             ChatRoom chatRoom = chatRoomRepo.findByUserIdAndDoctorIdAndDeletedAtNull(users.getId(), doctorId);
@@ -49,22 +52,19 @@ public class MessageService {
                     .user(users)
                     .createdAt(LocalDateTime.now())
                     .build();
-            chatRoomRepo.save(newChatRoom );
+            chatRoomRepo.save(newChatRoom);
             return ResponseEntity.ok(new ChatRoomResponse().castToResponse(newChatRoom));
 
-        }  else {
+        } else {
             throw new BadRequestException("User not found");
 
         }
     }
 
 
-    public Message createMessage(UUID roomId, String message) throws BadRequestException {
-        String user = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        Users users = userRepo.findByEmail(user);
-
-
+    public MessageResponse createMessage(UUID roomId, String message, String token) throws BadRequestException {
+        String email = jwtHelper.getUsernameFromToken(token);
+        Users users = userRepo.findByEmail(email);
         if (users == null) {
             throw new BadRequestException("User not found");
         }
@@ -72,30 +72,36 @@ public class MessageService {
             throw new BadRequestException("User is not active");
         }
         ChatRoom chatRoom = chatRoomRepo.findById(roomId).orElseThrow(() -> new BadRequestException("Chat Room not found"));
-        UUID user1 = chatRoom.getUser().getId();
-        UUID user2 = chatRoom.getDoctor().getId();
+        UUID user = chatRoom.getUser().getId();
+        UUID doctor = chatRoom.getDoctor().getId();
         Message newMessage = Message.builder()
                 .chatRoom(chatRoom)
                 .createdAt(LocalDateTime.now())
                 .messageType(MessageType.TEXT)
                 .message(message)
-                .senderId(user1 == users.getId() ? user1 : user2)
-                .receiverId(user1 == users.getId() ? user2 : user1)
+                .senderId(users.getId())
+//                .receiverId(user == users.getId() ? user : doctor)
                 .build();
-        return messageRepo.save(newMessage);
-
+        chatRoom.setLastMessage(message);
+        chatRoom.setLastMessageAt(LocalDateTime.now());
+        chatRoom.setMessageType(MessageType.TEXT);
+        chatRoom.setSenderId(users.getId());
+        chatRoomRepo.save(chatRoom);
+        messageRepo.save(newMessage);
+        MessageResponse mes = new MessageResponse().castToResponse(newMessage);
+        mes.setMe(newMessage.getSenderId().equals(users.getId()));
+        return mes;
 
     }
 
-    public ResponseEntity<?> getMyChatRooms() throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> getMyChatRooms(String token) throws BadRequestException, InternalServerErrorException {
         try {
-            String user = SecurityContextHolder.getContext().getAuthentication().getName();
-            Users users = userRepo.findByEmail(user);
+            String email = jwtHelper.getUsernameFromToken(token);
+            Users users = userRepo.findByEmail(email);
             if (users == null) {
                 throw new BadRequestException("User not found");
             }
             List<ChatRoomResponse> response = new ArrayList<>();
-
             for (ChatRoom chatRoom :
                     chatRoomRepo.findAllByUserOrDoctor(users, users)) {
                 response.add(new ChatRoomResponse().castToResponse(chatRoom));
@@ -112,7 +118,7 @@ public class MessageService {
 
     // get chat room by id and deletedAt null
     public ResponseEntity<?> getChatRoom(UUID roomId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        try{
+        try {
             String user = SecurityContextHolder.getContext().getAuthentication().getName();
             Users users = userRepo.findByEmail(user);
             if (users == null) {
@@ -126,15 +132,11 @@ public class MessageService {
                 throw new ForbiddenException("You are not authorized to view this chat room");
             }
             return ResponseEntity.ok(new ChatRoomResponse().castToResponse(chatRoom));
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (ForbiddenException e) {
+        } catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
@@ -166,8 +168,8 @@ public class MessageService {
         }
     }
 
-    public ResponseEntity<?> getRoomMessages(UUID roomId) throws BadRequestException, ForbiddenException {
-        String user = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ResponseEntity<?> getRoomMessages(UUID roomId, String token) throws BadRequestException, ForbiddenException {
+        String user = jwtHelper.getUsernameFromToken(token);
         Users users = userRepo.findByEmail(user);
         if (users == null) {
             throw new BadRequestException("User not found");
@@ -176,14 +178,23 @@ public class MessageService {
         if (chatRoom == null) {
             throw new BadRequestException("Chat Room already deleted");
         }
-        if (chatRoom.getUser().getId() != users.getId() || chatRoom.getDoctor().getId() != users.getId()) {
+        List<MessageResponse> response = new ArrayList<>();
+
+        if (users.getRole() == UserRole.USER && chatRoom.getUser().getId().equals(users.getId())) {
+            for (Message message : messageRepo.findAllByChatRoomId(roomId)) {
+                MessageResponse mes = new MessageResponse().castToResponse(message);
+                mes.setMe(message.getSenderId().equals(users.getId()));
+                response.add(mes);
+            }
+        } else if (users.getRole() == UserRole.DOCTOR && chatRoom.getDoctor().getId().equals(users.getId())) {
+            for (Message message : messageRepo.findAllByChatRoomId(roomId)) {
+                MessageResponse mes = new MessageResponse().castToResponse(message);
+                mes.setMe(message.getSenderId().equals(users.getId()));
+                response.add(mes);
+            }
+        } else {
             throw new ForbiddenException("You are not authorized to view this chat room");
         }
-        List<MessageResponse> response = new ArrayList<>();
-        for (Message message : messageRepo.findAllByChatRoomId(roomId)) {
-            response.add(new MessageResponse().castToResponse(message));
-        }
-
         return ResponseEntity.ok(response);
     }
 

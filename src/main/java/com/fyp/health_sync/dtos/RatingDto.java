@@ -19,7 +19,7 @@ public class RatingDto {
     @Size(max = 255, message = "comment cannot be more than 255 characters")
     private String comment;
     @NotNull(message = "rating type cannot be null")
-    @EnumValidator(enumClass = RatingType.class, message = "Rating type must be one of the following: DOCTOR, USER, APPOINTMENT")
+    @EnumValidator(enumClass = RatingType.class, message = "Rating type must be one of the following: DOCTOR, USER")
     private String ratingType;
 
 }

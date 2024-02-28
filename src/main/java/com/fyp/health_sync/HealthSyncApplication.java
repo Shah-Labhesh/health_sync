@@ -32,6 +32,7 @@ public class HealthSyncApplication {
 				.title("Health Sync")
 				.version("1.0.0")
 				.description("Health Sync API");
+
 		return new OpenAPI().info(info);
 	}
 

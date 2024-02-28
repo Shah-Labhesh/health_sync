@@ -1,19 +1,14 @@
 package com.fyp.health_sync.utils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.AuthType;
 import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -26,16 +21,16 @@ public class UserResponse {
     private String name;
     private String email;
     private String avatar;
-    private LocalDateTime createdAt;
+    private String createdAt;
     private Boolean verified;
     private UserStatus accountStatus;
     private UserRole role;
     private AuthType authType;
     private Boolean textNotification;
-    private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
+    private String updatedAt;
+    private String deletedAt;
 
-    public UserResponse castToResponse(Users user){
+    public UserResponse castToResponse(Users user) {
         if (user == null) {
             return null;
         }
@@ -43,9 +38,9 @@ public class UserResponse {
                 .name(user.getName())
                 .email(user.getEmail())
                 .authType(user.getAuthType())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .deletedAt(user.getDeletedAt())
+                .createdAt(user.getCreatedAt().toString())
+                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
+                .deletedAt(user.getDeletedAt() != null ? user.getDeletedAt().toString() : null)
                 .accountStatus(user.getStatus())
                 .verified(user.getIsVerified())
                 .textNotification(user.isTextNotification())

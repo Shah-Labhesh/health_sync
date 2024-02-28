@@ -28,7 +28,7 @@ public class Appointments {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    private Integer appointmentId;
+    private String appointmentId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "doctor", referencedColumnName = "id")

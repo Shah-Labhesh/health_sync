@@ -14,4 +14,6 @@ public interface PrescriptionRepo extends JpaRepository<Prescriptions, UUID> {
     List<Prescriptions> findByUser(Users user);
 
     List<Prescriptions> findByDoctor(Users user);
+
+    List<Prescriptions> findAllByUser(Users user);
 }

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -112,4 +113,34 @@ public class PrescriptionService {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
+
+    // request for prescription of user by doctor
+    public ResponseEntity<?> getPrescriptionsOfUser(UUID userId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+        try {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users doctor = userRepo.findByEmail(email);
+        if (doctor == null) {
+            throw new BadRequestException("Doctor not found");
+        }
+        if (doctor.getRole() != UserRole.DOCTOR) {
+            throw new ForbiddenException("You are not authorized to view prescriptions");
+        }
+        Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
+        List<PrescriptionResponse> prescriptionResponses = new ArrayList<>();
+        for (Prescriptions prescription : prescriptionRepo.findAllByUser(user)) {
+            prescriptionResponses.add(new PrescriptionResponse().castToResponse(prescription));
+        }
+        return ResponseEntity.ok(prescriptionResponses);
+        }
+        catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+        catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
+        }
+        catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
 }

@@ -21,7 +21,7 @@ import java.util.UUID;
 @Builder
 public class AppointmentResponse {
     private UUID id;
-    private Integer appointmentId;
+    private String appointmentId;
     private Boolean isExpired;
     private LocalDateTime reminderTime;
     private Integer appointmentFee;
@@ -33,7 +33,7 @@ public class AppointmentResponse {
     private String appointmentType;
     private SlotsResponse slot;
     private String notes;
-    private Payment payment;
+    private String payment;
     private PaymentStatus paymentStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -54,7 +54,7 @@ public class AppointmentResponse {
                 .reminderTime(appointments.getReminderTime())
                 .isExpired(appointments.getIsExpired())
                 .notes(appointments.getNotes())
-                .payment(appointments.getPayment())
+                .payment(appointments.getPayment() != null ? appointments.getPayment().getId().toString() : null)
                 .paymentStatus(appointments.getPaymentStatus())
                 .createdAt(appointments.getCreatedAt())
                 .updatedAt(appointments.getUpdatedAt())

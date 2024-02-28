@@ -34,11 +34,11 @@ public class ChatRoom {
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")
     private Users user;
 

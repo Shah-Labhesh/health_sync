@@ -24,8 +24,12 @@ public class Payment {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    private double amount;
+    private Integer amount;
     private LocalDateTime createdAt;
+
+    private String khaltiMobile;
+    private String khaltiToken;
+    private String paymentType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")
