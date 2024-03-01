@@ -31,26 +31,25 @@ public class FAQsController {
 
     private final FAQsService faqsService;
 
-    @Operation(summary = "Get all FAQs")
+    @Operation(summary = "Get all FAQs", description = "UserRole.ALL", tags = {"FAQs"})
     @GetMapping
     public ResponseEntity<?> getAllFAQs() throws BadRequestException, InternalServerErrorException {
         return faqsService.getFAQs();
     }
 
-    @Operation(summary = "Add new FAQ")
-
+    @Operation(summary = "Add FAQS", description = "UserRole.ADMIN", tags = {"FAQs"})
     @PostMapping
     public ResponseEntity<?> addFAQs(@Valid @RequestBody AddFAQsDto faqs) throws BadRequestException, InternalServerErrorException {
         return faqsService.addFAQs(faqs);
     }
 
-    @Operation(summary = "Update FAQ")
+    @Operation(summary = "Update FAQ", description = "UserRole.ADMIN", tags = {"FAQs"})
     @PutMapping("{id}")
     public ResponseEntity<?> updateFAQs(@PathVariable UUID id,  @Valid @RequestBody UpdateFAQsDto faqs) throws BadRequestException, InternalServerErrorException {
         return faqsService.updateFAQs(faqs,id);
     }
 
-    @Operation(summary = "Delete FAQ")
+    @Operation(summary = "Delete FAQ", description = "UserRole.ADMIN", tags = {"FAQs"})
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFAQs(@PathVariable UUID id) throws BadRequestException, InternalServerErrorException {
         return faqsService.deleteFAQs(id);

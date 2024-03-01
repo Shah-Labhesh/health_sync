@@ -5,6 +5,7 @@ import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.ContactSupportService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,16 +24,20 @@ public class ContactController {
 
     private final ContactSupportService contactSupportService;
 
+
+    @Operation(summary = "Contact Support", description = "UserRole.USER, UserRole.DOCTOR", tags = {"Contact Us"})
     @PostMapping
     public ResponseEntity<?> contactSupport(String email, String message) throws BadRequestException, InternalServerErrorException {
         return contactSupportService.contactSupport(email, message);
     }
 
+    @Operation(summary = "Get all messages", description = "UserRole.ADMIN", tags = {"Contact Us"})
     @GetMapping
     public ResponseEntity<?> getAllMessages() throws InternalServerErrorException, BadRequestException, ForbiddenException {
         return contactSupportService.getAllMessages();
     }
 
+    @Operation(summary = "Send Response of message to user", description = "UserRole.ADMIN", tags = {"Contact Us"})
     @PostMapping("/response")
     public ResponseEntity<?> responseMessage(String responseMessage, UUID id) throws InternalServerErrorException, BadRequestException, ForbiddenException {
         return contactSupportService.responseMessage(responseMessage, id);

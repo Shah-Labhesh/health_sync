@@ -77,4 +77,76 @@ public class MailService {
                 "  </div>\n" +
                 "</div>\n";
     }
+
+    @Async
+    public void sendRequestEmail(String type, String reason, String name) throws InternalServerErrorException {
+        String subject = "Health sync - "+ type;
+        String message = generateRequestEmailTemplate(reason,name);
+        sendMail(from, subject, message);
+    }
+
+    private String generateRequestEmailTemplate(String reason, String name) {
+        return "<!DOCTYPE html>\n" +
+                "<html lang=\"en\">\n" +
+                "<head>\n" +
+                "<meta charset=\"UTF-8\">\n" +
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "<title>User Message Request</title>\n" +
+                "<style>\n" +
+                "  /* Reset styles */\n" +
+                "  body, html {\n" +
+                "    margin: 0;\n" +
+                "    padding: 0;\n" +
+                "    font-family: Arial, sans-serif;\n" +
+                "  }\n" +
+                "  \n" +
+                "  /* Container styles */\n" +
+                "  .container {\n" +
+                "    max-width: 600px;\n" +
+                "    margin: 0 auto;\n" +
+                "    padding: 20px;\n" +
+                "    border: 1px solid #ccc;\n" +
+                "    border-radius: 5px;\n" +
+                "  }\n" +
+                "\n" +
+                "  /* Heading styles */\n" +
+                "  h1 {\n" +
+                "    text-align: center;\n" +
+                "    color: #092C4C;\n" +
+                "  }\n" +
+                "\n" +
+                "  /* Message styles */\n" +
+                "  .message {\n" +
+                "    padding: 20px;\n" +
+                "    background-color: #f2f2f2;\n" +
+                "    border-radius: 5px;\n" +
+                "    margin-top: 20px;\n" +
+                "  }\n" +
+                "\n" +
+                "  /* Footer styles */\n" +
+                "  .footer {\n" +
+                "    margin-top: 20px;\n" +
+                "    text-align: center;\n" +
+                "  }\n" +
+                "</style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "  <div class=\"container\">\n" +
+                "    <h1>User Request</h1>\n" +
+                "    <p>Dear Admin,</p>\n" +
+                "    <div class=\"message\">\n" +
+                "      <p><strong>User Name:</strong> "+ name +"</p> <!-- Replace with actual user name -->\n" +
+                "      <p><strong>Reason:</strong></p>\n" +
+                "      <p>"+reason+"</p>\n" +
+                "    </div>\n" +
+                "    <div style='padding: 40px 30px; text-align: center;'>\n" +
+                "      <p style='margin: 0; font-size: 16px; line-height: 1.5; color: #555555;'>If you have any questions or need further assistance, please feel free to contact our customer service.</p>\n" +
+                "    </div>\n" +
+                "    <div style='padding: 30px; background-color: #f0f0f0; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;'>\n" +
+                "      <p style='margin: 0; font-size: 16px; line-height: 1.5; color: #888888; text-align: center;'>Thank you for using HealthSync</p>\n" +
+                "    </div>\n" +
+                "  </div>\n" +
+                "</body>\n" +
+                "</html>\n";
+    }
 }

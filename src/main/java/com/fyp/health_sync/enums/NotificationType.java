@@ -8,4 +8,5 @@ public enum NotificationType {
     CHAT,
     PAYMENT,
     REVIEW,
+    PRESCRIPTION_REQUEST,
 }

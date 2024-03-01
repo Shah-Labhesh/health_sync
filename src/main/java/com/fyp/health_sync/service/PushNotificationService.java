@@ -15,7 +15,7 @@ public class PushNotificationService {
         this.firebaseMessaging = firebaseMessaging;
     }
 
-    public void sendNotification(String title, String body, String token) throws FirebaseMessagingException {
+    public void sendNotification(String title, String body, String token) {
 
         try {
             Message message = Message
@@ -29,9 +29,8 @@ public class PushNotificationService {
                     .build();
 
             firebaseMessaging.send(message);
-        } catch (FirebaseMessagingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception Ignored) {
+            // TODO Auto-generated catch e.printStackTrace();
         }
     }
 }

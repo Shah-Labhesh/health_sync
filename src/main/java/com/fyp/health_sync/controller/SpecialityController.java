@@ -17,7 +17,7 @@ public class SpecialityController {
 
     private final SpecialityService specialityService;
 
-    @Operation(summary = "Get all specialities")
+    @Operation(summary = "Get all specialities available", description = "UserRole.USER, UserRole.DOCTOR", tags = {"Speciality"})
     @GetMapping("/all")
     public ResponseEntity<?> getAllSpecialities() throws InternalServerErrorException {
         return specialityService.getAllSpecialities();

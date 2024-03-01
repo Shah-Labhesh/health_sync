@@ -7,6 +7,7 @@ import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.KhaltiService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +25,13 @@ public class KhaltiController {
 
     private final KhaltiService khaltiService;
 
-
-
-
+    @Operation(summary = "Initiate Transaction", description = "UserRole.USER", tags = {"Khalti"})
     @PostMapping("/initiate")
     public ResponseEntity<?> initiateTransaction(@RequestBody @Valid KhaltiRequestDto khaltiRequest) throws  ForbiddenException, BadRequestException, InternalServerErrorException {
         return khaltiService.initiateTransaction(khaltiRequest);
     }
 
+    @Operation(summary = "Confirm Transaction", description = "UserRole.USER", tags = {"Khalti"})
     @PostMapping("/confirm")
     public ResponseEntity<?> confirm(@RequestBody @Valid ConfirmRequestDto khaltiRequest) throws  ForbiddenException, BadRequestException, InternalServerErrorException {
         return khaltiService.confirmTransaction(khaltiRequest);

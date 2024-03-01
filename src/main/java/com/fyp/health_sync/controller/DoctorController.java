@@ -20,55 +20,55 @@ public class DoctorController {
 
     private final DoctorService doctorService;
 
-    @Operation(summary = "Get nearby doctors")
+    @Operation(summary = "Get nearby doctors", description = "UserRole.USER", tags = {"Doctor"})
     @GetMapping("/nearby-doctors/{latitude}/{longitude}")
     public ResponseEntity<?> getNearbyDoctors(@PathVariable double latitude, @PathVariable double longitude) throws BadRequestException, InternalServerErrorException {
         return doctorService.getNearbyDoctors(latitude, longitude);
     }
 
-    @Operation(summary = "toggle favorite")
+    @Operation(summary = "toggle favorite", description = "UserRole.USER", tags = {"Doctor"})
     @PostMapping("/toggle-favorite/{doctorId}")
     public ResponseEntity<?> toggleFavorite(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException {
         return doctorService.toggleFavorite(doctorId);
     }
 
-    @Operation(summary = "get my favorites")
+    @Operation(summary = "get my favorites", description = "UserRole.USER", tags = {"Doctor"})
     @GetMapping("/my-favorites")
     public ResponseEntity<?> getMyFavorites() throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return doctorService.getMyFavorites();
     }
 
-    @Operation(summary = "Get doctor details by doctorId for users")
+    @Operation(summary = "Get doctor details by id", description = "UserRole.USER", tags = {"Doctor"})
     @GetMapping("/doctor-details/{doctorId}")
     public ResponseEntity<?> getDoctorDetails(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException {
         return doctorService.getDoctorById(doctorId);
     }
 
-    @Operation(summary = "Get doctor qualification by doctorId for users")
+    @Operation(summary = "Get doctor qualification by id", description = "UserRole.USER", tags = {"Doctor"})
     @GetMapping("/qualification/{doctorId}")
     public ResponseEntity<?> getDoctorQualification(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException {
         return doctorService.getDoctorQualification(doctorId);
     }
 
-    @Operation(summary = "Get doctor ratings by doctorId for users")
+    @Operation(summary = "Get doctor ratings by id", description = "UserRole.USER", tags = {"Doctor"})
     @GetMapping("/ratings/{doctorId}")
     public ResponseEntity<?> getDoctorRatings(@PathVariable UUID doctorId) throws BadRequestException, InternalServerErrorException {
         return doctorService.getRatingsOfDoctor(doctorId);
     }
 
-    @Operation(summary = "get my patients")
+    @Operation(summary = "get my patients", description = "UserRole.DOCTOR", tags = {"Doctor"})
     @GetMapping("/my-patients")
     public ResponseEntity<?> getMyPatients() throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return doctorService.getMyPatientList();
     }
 
-    @Operation(summary = "get have appointments doctor")
+    @Operation(summary = "get have appointments doctor", description = "UserRole.DOCTOR", tags = {"Doctor"})
     @GetMapping("/have-appointments")
     public ResponseEntity<?> getHaveAppointments() throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return doctorService.getTalkedDoctorList();
     }
 
-    @Operation(summary = "Filter doctor by speciality, fee, ratings")
+    @Operation(summary = "Filter doctor by speciality, fee, ratings", description = "UserRole.USER", tags = {"Doctor"})
     @GetMapping("/filter-doctors/{latitude}/{longitude}")
     public ResponseEntity<?> filterDoctors(@PathVariable double latitude, @PathVariable double longitude,
                                              @RequestParam(required = false) String searchText,

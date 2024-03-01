@@ -15,4 +15,6 @@ public interface MedicalRecordRepo extends JpaRepository<MedicalRecords, UUID> {
     List<MedicalRecords> findByUserAndDeletedAtNull(Users user);
 
     List<MedicalRecords> findByDoctorAndDeletedAtNull(Users doctor);
+
+    List<MedicalRecords> findAllByUser(Users user);
 }

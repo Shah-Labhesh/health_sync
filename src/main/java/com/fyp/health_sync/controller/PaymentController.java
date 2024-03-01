@@ -4,6 +4,7 @@ package com.fyp.health_sync.controller;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.service.PaymentService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @Operation(summary = "Get Payments", description = "UserRole.USER, UserRole.DOCTOR", tags = {"Payment"})
     @GetMapping
     public ResponseEntity<?> getPayments(@RequestParam(required = true, defaultValue = "ALL") String sort) throws ForbiddenException, BadRequestException {
         return paymentService.getMyPayments(sort);

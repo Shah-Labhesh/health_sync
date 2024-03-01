@@ -24,57 +24,56 @@ public class MedicalRecordController {
 
     private final MedicalRecordService medicalRecordService;
 
-    @Operation(summary = "Add Medical Record by user")
+    @Operation(summary = "Add Medical Record",description = "UserRole.USER",tags = {"Medical Record"})
     @PostMapping
     public ResponseEntity<?> addMedicalRecord(@ModelAttribute @RequestBody @Valid AddMedicalRecordDto recordDto) throws BadRequestException, IOException, InternalServerErrorException {
         return medicalRecordService.uploadRecord(recordDto);
     }
 
-    @Operation(summary = "upload Medical Record by Doctor")
+    @Operation(summary = "upload Medical Record", description = "UserRole.DOCTOR", tags = {"Medical Record"})
     @PostMapping("/{userId}")
     public ResponseEntity<?> uploadMedicalRecord(@ModelAttribute @RequestBody @Valid AddMedicalRecordDto recordDto, @PathVariable UUID userId) throws BadRequestException, IOException, InternalServerErrorException {
         return medicalRecordService.uploadRecordByDoctor(recordDto, userId);
     }
 
 
-    @Operation(summary = "Get all Medical Record of user by user")
+    @Operation(summary = "Get all Medical Record by self",description = "UserRole.USER",tags = {"Medical Record"})
     @GetMapping
     public ResponseEntity<?> getAllMedicalRecordOfUser(@RequestParam(required = true,defaultValue = "ALL") String sort) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return medicalRecordService.getAllRecordByUser(sort);
     }
 
-    @Operation(summary = "Get all Medical Record of user by Doctor")
+    @Operation(summary = "Get all Medical Record of user", description = "UserRole.DOCTOR", tags = {"Medical Record"})
     @GetMapping("/doctor")
     public ResponseEntity<?> getAllMedicalRecordOfUserByDoctor(@RequestParam(required = true,defaultValue = "ALL") String sort) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return medicalRecordService.getAllRecordByDoctor(sort);
     }
 
-    @Operation(summary = "Get Medical Record by user")
+    @Operation(summary = "Get Medical Record by id", description = "UserRole.USER", tags = {"Medical Record"})
     @GetMapping("/{recordId}")
     public ResponseEntity<?> getMedicalRecordById(@PathVariable UUID recordId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return  medicalRecordService.getRecordById(recordId);
     }
 
-    @Operation(summary = "Update Medical Record by user")
+    @Operation(summary = "Update Medical Record by id", description = "UserRole.USER", tags = {"Medical Record"})
     @PutMapping("/{recordId}")
     public ResponseEntity<?> updateMedicalRecord(@PathVariable UUID recordId, @RequestBody @Valid UpdateMedicalRecordDto recordDto) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return medicalRecordService.updateMedicalRecord(recordDto, recordId );
     }
 
-    @Operation(summary = "Delete Medical Record by user")
-    @DeleteMapping("/{recordId}")
-    public ResponseEntity<?> deleteMedicalRecordById( @PathVariable UUID recordId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        return medicalRecordService.deleteMedicalRecord(recordId);
-    }
+//    @Operation(summary = "Delete Medical Record by user")
+//    @DeleteMapping("/{recordId}")
+//    public ResponseEntity<?> deleteMedicalRecordById( @PathVariable UUID recordId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+//        return medicalRecordService.deleteMedicalRecord(recordId);
+//    }
 
-    // share medical record to doctor
-    @Operation(summary = "Share Medical Record by user")
+    @Operation(summary = "Share Medical Record to doctor", description = "UserRole.USER", tags = {"Medical Record"})
     @PostMapping("/share/{recordId}/{doctorId}")
     public ResponseEntity<?> shareMedicalRecord(@PathVariable UUID recordId, @PathVariable UUID doctorId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return medicalRecordService.shareMedicalRecord(recordId, doctorId);
     }
 
-    @Operation(summary = "take back Medical Record by user")
+    @Operation(summary = "take back Medical Record from doctor", description = "UserRole.USER", tags = {"Medical Record"})
     @DeleteMapping("/revoke/{recordId}")
     public ResponseEntity<?> revokeMedicalRecord(@PathVariable UUID recordId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return medicalRecordService.revokeMedicalRecord(recordId);

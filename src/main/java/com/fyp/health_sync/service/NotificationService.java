@@ -30,6 +30,7 @@ public class NotificationService {
     private final PrescriptionRepo prescriptionRepo;
     private final ChatRoomRepo chatRoomRepo;
     private final PaymentRepo paymentRepo;
+    private final ViewPrescriptionPermissionRepo viewPPRepo;
 
     /*
     APPOINTMENT,
@@ -123,6 +124,9 @@ public class NotificationService {
                 }
                 case SHARE_RECORD -> {
                     target = shareRecordRepo.findById(id).orElseThrow(() -> new BadRequestException("Record not found"));
+                }
+                case PRESCRIPTION_REQUEST -> {
+                    target = viewPPRepo.findById(id).orElseThrow(() -> new BadRequestException("Prescription not found"));
                 }
 
             }

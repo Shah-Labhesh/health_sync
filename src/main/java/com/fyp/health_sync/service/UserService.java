@@ -1,9 +1,7 @@
 package com.fyp.health_sync.service;
 
-import com.fyp.health_sync.dtos.AddDoctorDetailsDto;
-import com.fyp.health_sync.dtos.AddMoreDetailsDto;
-import com.fyp.health_sync.dtos.UpdateUserDto;
-import com.fyp.health_sync.dtos.UploadAddressDto;
+import com.fyp.health_sync.dtos.*;
+import com.fyp.health_sync.entity.DataRemovalRequest;
 import com.fyp.health_sync.entity.FirebaseToken;
 import com.fyp.health_sync.entity.Speciality;
 import com.fyp.health_sync.entity.Users;
@@ -11,6 +9,7 @@ import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
+import com.fyp.health_sync.repository.DataRemovalRequestRepo;
 import com.fyp.health_sync.repository.FirebaseTokenRepo;
 import com.fyp.health_sync.repository.SpecialityRepo;
 import com.fyp.health_sync.repository.UserRepo;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,6 +39,8 @@ public class UserService {
     private final SpecialityRepo specialityRepo;
     private final UserRepo userRepo;
     private final FirebaseTokenRepo firebaseTokenRepo;
+    private final DataRemovalRequestRepo dataRemovalRequestRepo;
+    private final MailService mailService;
 
     public ResponseEntity<?> currentUser() throws BadRequestException, InternalServerErrorException {
         try {
@@ -251,4 +253,32 @@ public class UserService {
 
     }
 
+    public ResponseEntity<?> requestForDataRemoval(DataRemovalRequestDto request) throws BadRequestException, InternalServerErrorException {
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            Users user = userRepo.findByEmail(email);
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            List<DataRemovalRequest> removalRequest = dataRemovalRequestRepo.findAllByUserAndType(user,request.getType().toString());
+            for ( DataRemovalRequest dataRemovalRequest : removalRequest) {
+                if (!dataRemovalRequest.isAccepted() && !dataRemovalRequest.isRejected()) {
+                    throw new BadRequestException("Request already sent");
+                }
+            }
+            DataRemovalRequest dataRemovalRequest = DataRemovalRequest.builder()
+                    .user(user)
+                    .reason(request.getReason())
+                    .type(request.getType())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            dataRemovalRequestRepo.save(dataRemovalRequest);
+            mailService.sendRequestEmail(request.getType().toString(), request.getReason(), user.getName());
+            return ResponseEntity.created(null).body(new SuccessResponse("Request sent successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
 }

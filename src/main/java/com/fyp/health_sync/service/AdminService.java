@@ -1,13 +1,20 @@
 package com.fyp.health_sync.service;
 
 
+import com.fyp.health_sync.entity.DataRemovalRequest;
+import com.fyp.health_sync.entity.MedicalRecords;
+import com.fyp.health_sync.entity.Prescriptions;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
+import com.fyp.health_sync.repository.DataRemovalRequestRepo;
+import com.fyp.health_sync.repository.MedicalRecordRepo;
+import com.fyp.health_sync.repository.PrescriptionRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.DoctorResponse;
+import com.fyp.health_sync.utils.RemovalRequestResponse;
 import com.fyp.health_sync.utils.SuccessResponse;
 import com.fyp.health_sync.utils.UserResponse;
 import jakarta.transaction.Transactional;
@@ -23,6 +30,9 @@ import java.util.*;
 public class AdminService {
 
     private final UserRepo userRepo;
+    private final DataRemovalRequestRepo dataRemovalRequestRepo;
+    private final MedicalRecordRepo medicalRecordRepo;
+    private final PrescriptionRepo prescriptionRepo;
 
 
     public ResponseEntity<?> updateApprovedStatus(UUID id, Boolean status) throws BadRequestException, InternalServerErrorException {
@@ -238,4 +248,61 @@ public class AdminService {
     }
 
 
+    public ResponseEntity<?> getAllDataRemovalRequests() throws InternalServerErrorException {
+        try {
+            List<RemovalRequestResponse> response = new ArrayList<>();
+            for (DataRemovalRequest request: dataRemovalRequestRepo.findAll()
+                 ) {
+                response.add(new RemovalRequestResponse().castToResponse(request));
+            }
+            response.sort(Comparator.comparing(RemovalRequestResponse::getCreatedAt).reversed());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<?> acceptDataRemovalRequest(UUID requestId) throws BadRequestException, InternalServerErrorException {
+        try {
+            DataRemovalRequest request = dataRemovalRequestRepo.findById(requestId).orElseThrow(() -> new BadRequestException("Request not found"));
+            switch (request.getType()) {
+                case "ACCOUNT_DELETION" -> userRepo.delete(request.getUser());
+                case "MEDICAL_RECORDS_DELETION" -> {
+                    List<MedicalRecords> records = medicalRecordRepo.findAllByUser(request.getUser());
+                    medicalRecordRepo.deleteAll(records);
+                }
+                case "PRESCRIPTION_DELETION" -> {
+                    List<Prescriptions> prescriptions = prescriptionRepo.findAllByUser(request.getUser());
+                    prescriptionRepo.deleteAll(prescriptions);
+                }
+                default -> throw new BadRequestException("Invalid removal type");
+            }
+
+            List<MedicalRecords> records = medicalRecordRepo.findAllByUser(request.getUser());
+            request.setAccepted(true);
+            dataRemovalRequestRepo.save(request);
+            return ResponseEntity.ok(new SuccessResponse("Data removal accepted successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<?> rejectDataRemovalRequest(UUID requestId) throws BadRequestException, InternalServerErrorException {
+        try {
+            DataRemovalRequest request = dataRemovalRequestRepo.findById(requestId).
+                    orElseThrow(() -> new BadRequestException("Request not found"));
+            request.setRejected(true);
+            dataRemovalRequestRepo.save(request);
+            return ResponseEntity.ok(new SuccessResponse("Data removal rejected successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+
+        }
+    }
 }
