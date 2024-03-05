@@ -1,5 +1,6 @@
 package com.fyp.health_sync.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fyp.health_sync.dtos.ConfirmRequestDto;
@@ -19,11 +20,25 @@ import com.fyp.health_sync.repository.FirebaseTokenRepo;
 import com.fyp.health_sync.repository.PaymentRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.SuccessResponse;
+import com.google.api.Http;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+
 import lombok.RequiredArgsConstructor;
+
+import org.checkerframework.checker.units.qual.t;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -36,8 +51,14 @@ import java.util.Map;
 public class KhaltiService {
     private static final String INITIATE_URL = "https://khalti.com/api/v2/payment/initiate/";
     private static final String CONFIRM_URL = "https://khalti.com/api/v2/payment/confirm/";
+    private static final String VERIFY_URL="https://khalti.com/api/v2/payment/verify/";
+
     @Value("test_public_key_1bdb1266d642404d9790da96355f3a73")
     private String TEST_PUBLIC_KEY;
+
+    @Value("test_secret_key_590996dcc7dc4b5ebd5b314512ecab0e")
+    private String TEST_SECRET_KEY;
+
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -48,8 +69,8 @@ public class KhaltiService {
     private final PushNotificationService pushNotificationService;
     private final FirebaseTokenRepo firebaseTokenRepo;
 
-
-    public ResponseEntity<?> initiateTransaction(KhaltiRequestDto khaltiRequest) throws ForbiddenException, BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> initiateTransaction(KhaltiRequestDto khaltiRequest)
+            throws ForbiddenException, BadRequestException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -61,7 +82,8 @@ public class KhaltiService {
                 throw new ForbiddenException("Only users can make payments");
             }
 
-            Appointments appointment = appointmentRepo.findById(khaltiRequest.getProduct_identity()).orElseThrow(() -> new BadRequestException("Appointment not found"));
+            Appointments appointment = appointmentRepo.findById(khaltiRequest.getProduct_identity())
+                    .orElseThrow(() -> new BadRequestException("Appointment not found"));
             if (appointment.getPaymentStatus() == PaymentStatus.SUCCESS) {
                 throw new BadRequestException("Payment already made for this appointment");
             }
@@ -73,38 +95,22 @@ public class KhaltiService {
             khaltiRequest.setAmount(1000);
             khaltiRequest.setProduct_name("Health Sync Appointment");
             Map<String, Object> mapResponse = new HashMap<>();
-            System.out.println("khaltiRequest");
-            Object response = restTemplate.postForEntity(INITIATE_URL, khaltiRequest, Object.class);
-            System.out.println(response);
-//            if (response == null) {
-//                throw new InternalServerErrorException("Khalti Server Error");
-//            }
-//            if (handleHTTPError(response) != null) {
-//                throw new BadRequestException(handleHTTPError(response));
-//            }
-//            System.out.println(response.getBody());
-
+            Object response = restTemplate.postForObject(INITIATE_URL, khaltiRequest, Object.class);
+            if (response == null) {
+                throw new InternalServerErrorException("Khalti Server Error");
+            }
             String jsonResponse = objectMapper.writeValueAsString(response);
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-            JsonNode khaltiToken = jsonNode.get("token");
-            mapResponse.put("khalti_token", khaltiToken.asText());
 
-            if (appointment.getPayment() == null) {
-                Payment payment = Payment.builder()
-                        .amount(appointment.getTotalFee())
-                        .createdAt(LocalDateTime.now())
-                        .user(appointment.getUser())
-                        .doctor(appointment.getDoctor())
-                        .build();
-                paymentRepo.save(payment);
-                appointment.setPayment(payment);
-            } else {
-                appointment.getPayment().setKhaltiToken(khaltiToken.asText());
-                paymentRepo.save(appointment.getPayment());
+            mapResponse.put("khalti_token", jsonNode.get("token").asText());
+            Payment payment = paymentRepo.findByAppointment(appointment);
+            if (payment != null){
+                throw new BadRequestException("Payment already done for this appointment");
             }
-            appointmentRepo.save(appointment);
+
             return ResponseEntity.created(null).body(mapResponse);
-        } catch (ForbiddenException e) {
+        } 
+        catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
@@ -113,8 +119,8 @@ public class KhaltiService {
         }
     }
 
-
-    public ResponseEntity<?> confirmTransaction(ConfirmRequestDto confirmKhaltiRequest) throws ForbiddenException, BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> confirmTransaction(ConfirmRequestDto confirmKhaltiRequest)
+            throws ForbiddenException, BadRequestException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -126,8 +132,9 @@ public class KhaltiService {
                 throw new ForbiddenException("Only users can make payments");
             }
 
-            Appointments appointment = appointmentRepo.findById(confirmKhaltiRequest.getAppointmentId()).orElseThrow(() -> new BadRequestException("Appointment not found"));
-            if (appointment.getPaymentStatus() == PaymentStatus.SUCCESS) {
+            Appointments appointment = appointmentRepo.findById(confirmKhaltiRequest.getAppointmentId())
+                    .orElseThrow(() -> new BadRequestException("Appointment not found"));
+            if ( paymentRepo.findByAppointment(appointment) != null){
                 throw new BadRequestException("Payment already made for this appointment");
             }
             if (appointment.getUser().getId() != user.getId()) {
@@ -136,26 +143,50 @@ public class KhaltiService {
             confirmKhaltiRequest.setPublic_key(TEST_PUBLIC_KEY);
             Object response = restTemplate.postForObject(CONFIRM_URL, confirmKhaltiRequest, Object.class);
             String jsonResponse = objectMapper.writeValueAsString(response);
-            System.out.println(jsonResponse);
+
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
             JsonNode token = jsonNode.get("token");
             JsonNode amount = jsonNode.get("amount");
 
-            appointment.getPayment().setKhaltiToken(token.asText());
-            appointment.getPayment().setAmount(amount.asInt() / 100);
-            appointment.getPayment().setPaymentType("Khalti");
-            appointment.getPayment().setKhaltiMobile(confirmKhaltiRequest.getMobile());
-            appointment.getPayment().setCreatedAt(LocalDateTime.now());
-            appointment.setPaymentStatus(PaymentStatus.SUCCESS);
-            appointmentRepo.save(appointment);
+            String idx = verifyTransaction(token.asText());
 
-            notificationService.sendNotification(appointment.getPayment().getId(), appointment.getUser().getName() + " made payment of Rs." + appointment.getTotalFee() + " for appointment " + appointment.getAppointmentId(), NotificationType.PAYMENT, appointment.getDoctor().getId());
-            notificationService.sendNotification(appointment.getPayment().getId(), "Payment successful for appointment with Dr. " + appointment.getDoctor().getName() + " of Rs." + appointment.getTotalFee(), NotificationType.PAYMENT, appointment.getUser().getId());
+            if (idx == null){
+                throw new BadRequestException("Transaction not verified");
+            }
+            Payment payment = Payment.builder()
+                    .amount(appointment.getAppointmentFee())
+                    .createdAt(LocalDateTime.now())
+                    .khaltiMobile(confirmKhaltiRequest.getMobile())
+                    .khaltiToken(token.asText())
+                    .paymentType("Khalti")
+                    .user(user)
+                    .doctor(appointment.getDoctor())
+                    .appointment(appointment)
+                    .transactionId(idx)
+                    .build();
+
+            appointmentRepo.save(appointment);
+            paymentRepo.save(payment);
+
+            notificationService.sendNotification(payment.getId(),
+                    appointment.getUser().getName() + " made payment of Rs." + appointment.getTotalFee()
+                            + " for appointment " + appointment.getAppointmentId(),
+                    NotificationType.PAYMENT, appointment.getDoctor().getId());
+            notificationService.sendNotification(
+                    payment.getId(), "Payment successful for appointment with Dr. "
+                            + appointment.getDoctor().getName() + " of Rs." + appointment.getTotalFee(),
+                    NotificationType.PAYMENT, appointment.getUser().getId());
             for (FirebaseToken fToken : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
-                pushNotificationService.sendNotification("Appointment Booked", "Payment successful for appointment with Dr. " + appointment.getDoctor().getName() + " of Rs." + appointment.getTotalFee(), fToken.getToken());
+                pushNotificationService.sendNotification(
+                        "Appointment Booked", "Payment successful for appointment with Dr. "
+                                + appointment.getDoctor().getName() + " of Rs." + appointment.getTotalFee(),
+                        fToken.getToken());
             }
             for (FirebaseToken fToken : firebaseTokenRepo.findAllByUser(appointment.getDoctor())) {
-                pushNotificationService.sendNotification("New Appointment", appointment.getUser().getName() + " made payment of Rs." + appointment.getTotalFee() + " for appointment " + appointment.getAppointmentId(), fToken.getToken());
+                pushNotificationService.sendNotification(
+                        "New Appointment", appointment.getUser().getName() + " made payment of Rs."
+                                + appointment.getTotalFee() + " for appointment " + appointment.getAppointmentId(),
+                        fToken.getToken());
             }
             return ResponseEntity.created(null).body(new SuccessResponse("Payment confirmed successfully"));
         } catch (ForbiddenException e) {
@@ -167,19 +198,28 @@ public class KhaltiService {
         }
     }
 
-    public String handleHTTPError(ResponseEntity<?> response) throws IOException {
+    public String verifyTransaction(String token) throws JsonProcessingException, JSONException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization","Key "+TEST_SECRET_KEY);
 
-        if (response.getStatusCode().is4xxClientError()) {
-            System.out.println(response.getBody());
-            String jsonResponse = objectMapper.writeValueAsString(response);
-            JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        map.add("token", token);
+        map.add("amount", "1000");
 
-            return jsonNode.get("detail").toString();
-        } else if (response.getStatusCode().is5xxServerError()) {
-            return "Khalti Server Error";
-        }
-        return null;
+        HttpEntity<Object> requestEntity =
+                new HttpEntity<>(map, headers);
+
+        Object response = restTemplate.exchange(VERIFY_URL,HttpMethod.POST, requestEntity, Object.class);
+        String jsonResponse = objectMapper.writeValueAsString(response);
+        System.out.println(jsonResponse);
+
+        JSONObject jsonObject=new JSONObject(jsonResponse);
+        JSONObject body = (JSONObject) jsonObject.get("body");
+
+        return (String) body.get("idx");
+
+        
+
     }
-
 
 }

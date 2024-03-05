@@ -54,7 +54,7 @@ public class MedicalRecordService {
             MedicalRecords medicalRecords = MedicalRecords.builder()
                     .recordType(recordDto.getRecordType())
                     .record(ImageUtils.compress(recordDto.getRecord().getBytes()))
-                    .recordCreatedDate(recordDto.getRecordCreatedDate())
+                    .medicalRecordType(recordDto.getMedicalRecordType())
                     .selfAdded(true)
                     .user(user)
                     .createdAt(LocalDateTime.now())
@@ -86,7 +86,7 @@ public class MedicalRecordService {
             MedicalRecords medicalRecords = MedicalRecords.builder()
                     .recordType(recordDto.getRecordType())
                     .record(ImageUtils.compress(recordDto.getRecord().getBytes()))
-                    .recordCreatedDate(recordDto.getRecordCreatedDate())
+                    .medicalRecordType(recordDto.getMedicalRecordType())
                     .selfAdded(false)
                     .user(patient)
                     .doctor(doctor)
@@ -94,7 +94,7 @@ public class MedicalRecordService {
                     .build();
             medicalRecordRepo.save(medicalRecords);
 
-            notificationService.sendNotification(medicalRecords.getId(),"You have a new medical record from Dr. "+medicalRecords.getDoctor().getName(),NotificationType.SHARE_RECORD, medicalRecords.getUser().getId());
+            notificationService.sendNotification(medicalRecords.getId(),"You have a new medical record from Dr. "+medicalRecords.getDoctor().getName(),NotificationType.MEDICAL_REPORT, medicalRecords.getUser().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(patient)) {
                 pushNotificationService.sendNotification("New Medical Record", "You have a new medical record from Dr. "+medicalRecords.getDoctor().getName(), token.getToken());
             }
@@ -264,8 +264,8 @@ public class MedicalRecordService {
             if (record.getRecord() != null) {
                 records.get().setRecord(ImageUtils.compress(record.getRecord().getBytes()));
             }
-            if (record.getRecordCreatedDate() != null) {
-                records.get().setRecordCreatedDate(record.getRecordCreatedDate());
+            if (record.getMedicalRecordType() != null) {
+                records.get().setMedicalRecordType(record.getMedicalRecordType());
             }
             if (record.getRecordType() != null) {
                 records.get().setRecordType(record.getRecordType());

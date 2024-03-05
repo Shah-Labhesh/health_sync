@@ -1,9 +1,9 @@
 package com.fyp.health_sync.dtos;
 
+import com.fyp.health_sync.enums.MedicalRecordType;
 import com.fyp.health_sync.enums.RecordType;
 import com.fyp.health_sync.validation.EnumValidator;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +21,10 @@ public class AddMedicalRecordDto {
     )
     private String recordType;
     private MultipartFile record;
-    @NotBlank(message = "Record created date cannot be empty")
-    private String recordCreatedDate;
+    @NotBlank(message = "Medical Record type cannot be empty")
+    @EnumValidator(
+            enumClass = MedicalRecordType.class,
+            message = "Medical Record type should be one of the following: VITAL_SIGNS_RECORD,LAB_TEST_RESULTS,RADIOLOGY_REPORTS"
+    )
+    private String medicalRecordType;
 }

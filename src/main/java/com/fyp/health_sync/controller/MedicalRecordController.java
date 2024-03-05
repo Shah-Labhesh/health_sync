@@ -57,7 +57,7 @@ public class MedicalRecordController {
 
     @Operation(summary = "Update Medical Record by id", description = "UserRole.USER", tags = {"Medical Record"})
     @PutMapping("/{recordId}")
-    public ResponseEntity<?> updateMedicalRecord(@PathVariable UUID recordId, @RequestBody @Valid UpdateMedicalRecordDto recordDto) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> updateMedicalRecord(@PathVariable UUID recordId,@ModelAttribute @RequestBody @Valid UpdateMedicalRecordDto recordDto) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return medicalRecordService.updateMedicalRecord(recordDto, recordId );
     }
 

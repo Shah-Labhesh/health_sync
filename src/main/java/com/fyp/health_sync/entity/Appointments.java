@@ -43,9 +43,7 @@ public class Appointments {
     private Slots slot;
     private String notes;
     private Boolean isExpired;
-    @OneToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment", referencedColumnName = "id")
-    private Payment payment;
+
     @Enumerated (EnumType.STRING)
     private PaymentStatus paymentStatus;
     private Integer appointmentFee;

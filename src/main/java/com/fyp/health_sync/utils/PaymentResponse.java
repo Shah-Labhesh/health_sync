@@ -24,6 +24,7 @@ public class PaymentResponse {
     private String paymentType;
     private UserResponse user;
     private DoctorResponse doctor;
+    private AppointmentResponse appointment;
 
     public PaymentResponse castToResponse(Payment payment) {
       return PaymentResponse.builder()
@@ -35,6 +36,7 @@ public class PaymentResponse {
               .paymentType(payment.getPaymentType())
               .user(payment.getUser() == null ? null : new UserResponse().castToResponse(payment.getUser()))
               .doctor(payment.getDoctor() == null ? null : new DoctorResponse().castToResponse(payment.getDoctor()))
+                .appointment(payment.getAppointment() == null ? null : new AppointmentResponse().castToResponse(payment.getAppointment()))
               .build();
     }
 }

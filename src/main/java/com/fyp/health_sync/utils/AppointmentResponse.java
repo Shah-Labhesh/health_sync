@@ -33,7 +33,6 @@ public class AppointmentResponse {
     private String appointmentType;
     private SlotsResponse slot;
     private String notes;
-    private String payment;
     private PaymentStatus paymentStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -54,7 +53,6 @@ public class AppointmentResponse {
                 .reminderTime(appointments.getReminderTime())
                 .isExpired(appointments.getIsExpired())
                 .notes(appointments.getNotes())
-                .payment(appointments.getPayment() != null ? appointments.getPayment().getId().toString() : null)
                 .paymentStatus(appointments.getPaymentStatus())
                 .createdAt(appointments.getCreatedAt())
                 .updatedAt(appointments.getUpdatedAt())

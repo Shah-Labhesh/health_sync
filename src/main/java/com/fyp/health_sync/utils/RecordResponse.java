@@ -1,7 +1,6 @@
 package com.fyp.health_sync.utils;
 
 import com.fyp.health_sync.entity.MedicalRecords;
-import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.RecordType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +20,7 @@ public class RecordResponse {
     private UUID id;
     private String recordType;
     private String record;
-    private String recordCreatedDate;
+    private String medicalRecordType;
     private boolean selfAdded;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -38,7 +37,7 @@ public class RecordResponse {
                     .id(record.getId())
                     .recordType(record.getRecordType())
                     .record(record.getRecord() != null ? "/files/pdf-record/" + record.getId() : null)
-                    .recordCreatedDate(record.getRecordCreatedDate())
+                    .medicalRecordType(record.getMedicalRecordType())
                     .selfAdded(record.isSelfAdded())
                     .createdAt(record.getCreatedAt())
                     .updatedAt(record.getUpdatedAt())
@@ -51,7 +50,7 @@ public class RecordResponse {
                 .id(record.getId())
                 .recordType(record.getRecordType())
                 .record(record.getRecord() != null ? "/files/image-record/"+ record.getId() : null)
-                .recordCreatedDate(record.getRecordCreatedDate())
+                .medicalRecordType(record.getMedicalRecordType())
                 .selfAdded(record.isSelfAdded())
                 .createdAt(record.getCreatedAt())
                 .updatedAt(record.getUpdatedAt())

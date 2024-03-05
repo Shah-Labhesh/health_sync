@@ -1,7 +1,6 @@
 package com.fyp.health_sync.entity;
 
 
-import com.fyp.health_sync.enums.RecordType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,7 +27,7 @@ public class MedicalRecords {
     private String recordType;
     @Lob
     private byte[] record;
-    private String recordCreatedDate;
+    private String medicalRecordType;
     private boolean selfAdded;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

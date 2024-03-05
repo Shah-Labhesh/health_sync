@@ -40,8 +40,6 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/v1/user/upload-details/**"),
                                 new AntPathRequestMatcher("/api/v1/user/khaltiId/**"),
                                 new AntPathRequestMatcher("/ws/**")
-//                                new AntPathRequestMatcher("/app/**"),
-//                                new AntPathRequestMatcher("/topic/**")
                         ).permitAll()
                         .requestMatchers(
                                 new AntPathRequestMatcher("/api/v1/admin/**")

@@ -56,7 +56,7 @@ public class PaymentService {
             });
             default -> throw new BadRequestException("Invalid sort parameter");
         }
-        return ResponseEntity.ok(paymentResponses);
+        return ResponseEntity.created(null).body(paymentResponses);
 
     }
 }

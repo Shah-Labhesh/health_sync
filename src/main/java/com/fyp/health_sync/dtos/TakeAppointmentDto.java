@@ -4,7 +4,6 @@ package com.fyp.health_sync.dtos;
 import com.fyp.health_sync.enums.AppointmentType;
 import com.fyp.health_sync.validation.EnumValidator;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -24,7 +23,7 @@ public class TakeAppointmentDto {
     private UUID slotId;
     @EnumValidator(enumClass = AppointmentType.class, message = "Appointment type must be CONSULTATION, FOLLOWUP,EMERGENCY,THERAPY,COUNSELING")
     private String appointmentType;
-    @Size(min = 10, max = 250, message = "notes must be between 10 and 250 digits")
+    @Size(max = 250, message = "notes must be less than 250 characters")
     private String notes;
     @NotNull(message = "appointment fee cannot be empty")
     @Min(value = 100, message = "appointment fee must be greater than 100")

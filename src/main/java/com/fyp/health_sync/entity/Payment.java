@@ -30,6 +30,7 @@ public class Payment {
     private String khaltiMobile;
     private String khaltiToken;
     private String paymentType;
+    private String transactionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")
@@ -38,6 +39,10 @@ public class Payment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
+
+    @OneToOne (fetch = FetchType.LAZY)
+    @JoinColumn(name = "appointment", referencedColumnName = "id")
+    private Appointments appointment;
 
 
 }

@@ -17,8 +17,8 @@ import com.fyp.health_sync.repository.FirebaseTokenRepo;
 import com.fyp.health_sync.repository.SlotRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.AppointmentResponse;
-import com.fyp.health_sync.utils.SuccessResponse;
 import com.google.firebase.messaging.FirebaseMessagingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -203,6 +203,7 @@ public class AppointmentService {
             for (Appointments appointments : appointmentRepo.findAllByUser(users)) {
                 list.add(new AppointmentResponse().castToResponse(appointments));
             }
+            list.sort(Comparator.comparing(o -> o.getSlot().getSlotDateTime()));
 
 
             return ResponseEntity.ok(list);
@@ -288,13 +289,29 @@ public class AppointmentService {
         for (Appointments appointment : appointments) {
             appointment.setReminderTime(null);
             appointmentRepo.save(appointment);
-            notificationService.sendNotification(appointment.getId(), "You have appointment with Dr. " + appointment.getDoctor().getName() + " at" + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getUser().getId());
-            notificationService.sendNotification(appointment.getId(), "You have appointment with " + appointment.getUser().getName() + " at" + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getUser().getId());
+            notificationService.sendNotification(appointment.getId(), "You have appointment with Dr. " + appointment.getDoctor().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getUser().getId());
+            notificationService.sendNotification(appointment.getId(), "You have appointment with " + appointment.getUser().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getUser().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
-                pushNotificationService.sendNotification("Appointment Reminder", "You have appointment with Dr. " + appointment.getDoctor().getName() + " at" + convertTimeToString(appointment.getSlot().getSlotDateTime()), token.getToken());
+                pushNotificationService.sendNotification("Appointment Reminder", "You have appointment with Dr. " + appointment.getDoctor().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), token.getToken());
             }
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getDoctor())) {
-                pushNotificationService.sendNotification("Appointment Reminder", "You have appointment with " + appointment.getUser().getName() + " at" + convertTimeToString(appointment.getSlot().getSlotDateTime()), token.getToken());
+                pushNotificationService.sendNotification("Appointment Reminder", "You have appointment with " + appointment.getUser().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), token.getToken());
+            }
+        }
+    }
+
+    // delete appointment if slot is before 3 hours of current time and payment is pending
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void scheduleAppointmentDelete() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime.now().minusHours(3));
+        for (Appointments appointment : appointments) {
+            if (appointment.getPaymentStatus() == PaymentStatus.PENDING) {
+               appointmentRepo.delete(appointment);
+                notificationService.sendNotification(appointment.getId(), "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", NotificationType.APPOINTMENT, appointment.getUser().getId());
+                for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
+                    pushNotificationService.sendNotification("Appointment Expired", "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", token.getToken());
+                }
             }
         }
     }

@@ -3,15 +3,18 @@ package com.fyp.health_sync.service;
 
 import com.fyp.health_sync.config.JwtHelper;
 import com.fyp.health_sync.entity.ChatRoom;
+import com.fyp.health_sync.entity.FirebaseToken;
 import com.fyp.health_sync.entity.Message;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.MessageType;
+import com.fyp.health_sync.enums.NotificationType;
 import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.ChatRoomRepo;
+import com.fyp.health_sync.repository.FirebaseTokenRepo;
 import com.fyp.health_sync.repository.MessageRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.ChatRoomResponse;
@@ -34,12 +37,13 @@ public class MessageService {
     private final UserRepo userRepo;
     private final MessageRepo messageRepo;
     private final JwtHelper jwtHelper;
+    private final NotificationService notificationService;
+    private final PushNotificationService pushNotificationService;
+    private final FirebaseTokenRepo firebaseTokenRepo;
 
 
-    public ResponseEntity<?> createChatRoom(UUID doctorId,String token) throws BadRequestException {
-        // String user = SecurityContextHolder.getContext().getAuthentication().getName();
-        String email = jwtHelper.getUsernameFromToken(token);
-
+    public ResponseEntity<?> createChatRoom(UUID doctorId) throws BadRequestException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Users users = userRepo.findByEmail(email);
 
         if (users != null) {
@@ -62,7 +66,7 @@ public class MessageService {
     }
 
 
-    public MessageResponse createMessage(UUID roomId, String message, String token) throws BadRequestException {
+    public MessageResponse createMessage(UUID roomId, String message, String token) throws BadRequestException, InternalServerErrorException {
         String email = jwtHelper.getUsernameFromToken(token);
         Users users = userRepo.findByEmail(email);
         if (users == null) {
@@ -72,15 +76,14 @@ public class MessageService {
             throw new BadRequestException("User is not active");
         }
         ChatRoom chatRoom = chatRoomRepo.findById(roomId).orElseThrow(() -> new BadRequestException("Chat Room not found"));
-        UUID user = chatRoom.getUser().getId();
-        UUID doctor = chatRoom.getDoctor().getId();
+        Users receiver = chatRoom.getUser().getId().equals(users.getId()) ? chatRoom.getDoctor() : chatRoom.getUser();
         Message newMessage = Message.builder()
                 .chatRoom(chatRoom)
                 .createdAt(LocalDateTime.now())
                 .messageType(MessageType.TEXT)
                 .message(message)
                 .senderId(users.getId())
-//                .receiverId(user == users.getId() ? user : doctor)
+                .receiverId(receiver.getId())
                 .build();
         chatRoom.setLastMessage(message);
         chatRoom.setLastMessageAt(LocalDateTime.now());
@@ -90,13 +93,20 @@ public class MessageService {
         messageRepo.save(newMessage);
         MessageResponse mes = new MessageResponse().castToResponse(newMessage);
         mes.setMe(newMessage.getSenderId().equals(users.getId()));
+
+        if (receiver.isTextNotification()){
+        notificationService.sendNotification(mes.getChatRoom().getId(), "You have a new message from " + users.getName(), NotificationType.CHAT,receiver.getId());
+            for (FirebaseToken t : firebaseTokenRepo.findAllByUser(receiver)) {
+                 pushNotificationService.sendNotification("New Message", "You have a new message from " + users.getName(), t.getToken());
+            }
+        }
         return mes;
 
     }
 
-    public ResponseEntity<?> getMyChatRooms(String token) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> getMyChatRooms() throws BadRequestException, InternalServerErrorException {
         try {
-            String email = jwtHelper.getUsernameFromToken(token);
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users users = userRepo.findByEmail(email);
             if (users == null) {
                 throw new BadRequestException("User not found");
@@ -106,7 +116,7 @@ public class MessageService {
                     chatRoomRepo.findAllByUserOrDoctor(users, users)) {
                 response.add(new ChatRoomResponse().castToResponse(chatRoom));
             }
-
+            response.sort((o1, o2) -> o2.getLastMessageAt().compareTo(o1.getLastMessageAt()));
             return ResponseEntity.ok(response);
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
