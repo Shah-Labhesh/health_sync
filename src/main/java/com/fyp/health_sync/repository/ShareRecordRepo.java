@@ -18,4 +18,6 @@ public interface ShareRecordRepo extends JpaRepository<ShareMedicalRecords, UUID
     List<ShareMedicalRecords> findByDoctor(Users doctor);
 
     Optional<ShareMedicalRecords> findByMedicalRecordsAndDoctor(MedicalRecords medicalRecords, Users doctor);
+
+    List<ShareMedicalRecords> findByDoctorAndUser(Users doctor, Users user);
 }

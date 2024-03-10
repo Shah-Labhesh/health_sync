@@ -8,6 +8,7 @@ import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
+import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.repository.DataRemovalRequestRepo;
 import com.fyp.health_sync.repository.FirebaseTokenRepo;
@@ -270,6 +271,8 @@ public class UserService {
                     .user(user)
                     .reason(request.getReason())
                     .type(request.getType())
+                    .isAccepted(false)
+                    .isRejected(false)
                     .createdAt(LocalDateTime.now())
                     .build();
             dataRemovalRequestRepo.save(dataRemovalRequest);
@@ -278,6 +281,51 @@ public class UserService {
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> getRequests() throws BadRequestException, InternalServerErrorException {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            Users user = userRepo.findByEmail(email);
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            List<DataRemovalRequest> removalRequests = dataRemovalRequestRepo.findAllByUser(user);
+            for (DataRemovalRequest removalRequest : removalRequests) {
+                removalRequest.setUser(null);
+            }
+            return ResponseEntity.ok(removalRequests);
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> requestForApproval() throws BadRequestException, InternalServerErrorException, ForbiddenException {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            Users user = userRepo.findByEmail(email);
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            if (user.getRole() != UserRole.DOCTOR) {
+                throw new ForbiddenException("You are not authorized to request for approval");
+            }
+            if (user.getApproved()) {
+                throw new BadRequestException("Your account is already approved");
+            }
+            mailService.sendApprovalRequestEmail(user.getName());
+            return ResponseEntity.created(null).body(new SuccessResponse("Request sent successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
+        }
+
+        catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }

@@ -32,7 +32,7 @@ public class DoctorService {
     private final RatingRepo ratingRepo;
 
     public ResponseEntity<?> getNearbyDoctors(double latitude, double longitude) throws BadRequestException, InternalServerErrorException {
-        try{
+        try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Users user = userRepo.findByEmail(authentication.getName());
             if (user == null) {
@@ -55,49 +55,45 @@ public class DoctorService {
 
             }
             return ResponseEntity.ok(responses);
-        }
-        catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     @Transactional
     public ResponseEntity<?> toggleFavorite(UUID doctorId) throws BadRequestException, InternalServerErrorException {
-       try{
-           Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-           Users user = userRepo.findByEmail(authentication.getName());
-           if (user == null) {
-               throw new BadRequestException("User not found");
-           }
-           Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
-           if (doctor.getRole() != UserRole.DOCTOR) {
-               throw new BadRequestException("You can only add doctors to favorites");
-           }
-           if (favoritesRepo.findByDoctorAndUser(doctor, user) != null) {
-               favoritesRepo.delete(favoritesRepo.findByDoctorAndUser(doctor, user));
-               return ResponseEntity.ok(new SuccessResponse("Removed from favorites"));
-           } else {
-               favoritesRepo.save(Favorites.builder()
-                       .doctor(doctor)
-                       .user(user)
-                       .createdAt(LocalDateTime.now())
-                       .build());
-               return ResponseEntity.ok(new SuccessResponse("Added to favorites"));
-           }
-       }
-         catch (BadRequestException e){
-              throw new BadRequestException(e.getMessage());
-         }
-         catch (Exception e){
-              throw new InternalServerErrorException(e.getMessage());
-         }
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Users user = userRepo.findByEmail(authentication.getName());
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+            if (doctor.getRole() != UserRole.DOCTOR) {
+                throw new BadRequestException("You can only add doctors to favorites");
+            }
+            if (favoritesRepo.findByDoctorAndUser(doctor, user) != null) {
+                favoritesRepo.delete(favoritesRepo.findByDoctorAndUser(doctor, user));
+                return ResponseEntity.ok(new SuccessResponse("Removed from favorites"));
+            } else {
+                favoritesRepo.save(Favorites.builder()
+                        .doctor(doctor)
+                        .user(user)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+                return ResponseEntity.ok(new SuccessResponse("Added to favorites"));
+            }
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
     }
 
     public ResponseEntity<?> getMyFavorites() throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        try{
+        try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Users user = userRepo.findByEmail(authentication.getName());
             if (user == null) {
@@ -118,11 +114,9 @@ public class DoctorService {
                 responses.add(doctorResponse);
             }
             return ResponseEntity.ok(responses);
-        }
-        catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
@@ -150,17 +144,15 @@ public class DoctorService {
             response.setRatingCount(ratingRepo.countAllByDoctorIdAndRatingType(doctor.getId(), RatingType.DOCTOR));
 
             return ResponseEntity.ok(response);
-        }
-        catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> getDoctorQualification(UUID id) throws BadRequestException, InternalServerErrorException {
-        try{
+        try {
             Users doctor = userRepo.findById(id).orElseThrow(() -> new BadRequestException("Doctor not found"));
             if (doctor.getRole() != UserRole.DOCTOR) {
                 throw new BadRequestException("This user is not a doctor");
@@ -173,22 +165,20 @@ public class DoctorService {
             }
 
             return ResponseEntity.ok(response);
-        }
-        catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> getRatingsOfDoctor(UUID id) throws BadRequestException, InternalServerErrorException {
-        try{
+        try {
             Users doctor = userRepo.findById(id).orElseThrow(() -> new BadRequestException("Doctor not found"));
             if (doctor.getRole() != UserRole.DOCTOR) {
                 throw new BadRequestException("This user is not a doctor");
             }
-            List<RatingReviews> list =  new ArrayList<>();
+            List<RatingReviews> list = new ArrayList<>();
             List<RatingResponse> response = new ArrayList<>();
 
             for (RatingReviews rating : ratingRepo.findAllByDoctorAndRatingType(doctor, RatingType.DOCTOR)
@@ -219,18 +209,16 @@ public class DoctorService {
 
 
             return ResponseEntity.ok(response);
-        }
-        catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     // get my patient list from appointment
     public ResponseEntity<?> getMyPatientList() throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        try{
+        try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Users doctor = userRepo.findByEmail(authentication.getName());
             if (doctor == null) {
@@ -243,7 +231,7 @@ public class DoctorService {
             List<UserResponse> responses = new ArrayList<>();
             for (Appointments appointment : appointments
             ) {
-                if (appointment.getUser().getStatus() != UserStatus.ACTIVE){
+                if (appointment.getUser().getStatus() != UserStatus.ACTIVE) {
                     continue;
                 }
 
@@ -262,15 +250,12 @@ public class DoctorService {
                 if (!isFound) uniqueList.add(userResponse);
             }
             return ResponseEntity.ok(uniqueList);
-        }
-        catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
-
 
 
     // get talked doctor list from appointment
@@ -288,7 +273,7 @@ public class DoctorService {
             List<DoctorResponse> responses = new ArrayList<>();
             for (Appointments appointment : appointments
             ) {
-                if (appointment.getDoctor().getStatus() != UserStatus.ACTIVE){
+                if (appointment.getDoctor().getStatus() != UserStatus.ACTIVE) {
                     continue;
                 }
                 DoctorResponse doctorResponse = new DoctorResponse().castToResponse(appointment.getDoctor());
@@ -309,16 +294,14 @@ public class DoctorService {
                 if (!isFound) uniqueList.add(doctorResponse);
             }
             return ResponseEntity.ok(uniqueList);
-        }
-        catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
-    public ResponseEntity<?> filterDoctors(double latitude, double longitude,String text, UUID speciality, String feeType, Integer feeFrom, Integer feeTo, Double ratings, Boolean popular) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> filterDoctors(double latitude, double longitude, String text, UUID speciality, String feeType, Integer feeFrom, Integer feeTo, Double ratings, Boolean popular) throws BadRequestException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -335,24 +318,28 @@ public class DoctorService {
             }
             if (feeType != null) {
                 doctors.removeIf(doctor -> doctor.getFee() == null);
-                if (feeType.equals("LOW_TO_HIGH")) {
-                    doctors.sort((o1, o2) -> o1.getFee().compareTo(o2.getFee()));
-                } else if (feeType.equals("HIGH_TO_LOW")) {
-                    doctors.sort((o1, o2) -> o2.getFee().compareTo(o1.getFee()));
-                } else if (feeType.equals("RANGE")) {
-                    if (feeFrom == null || feeTo == null) {
-                        throw new BadRequestException("Fee range is required");
-                    }
-                    if (feeFrom >= feeTo) {
-                        throw new BadRequestException("Invalid fee range");
-                    }
-                    doctors.removeIf(doctor -> doctor.getFee() < feeFrom || doctor.getFee() > feeTo);
+                switch (feeType) {
+                    case "LOW_TO_HIGH":
+                        doctors.sort((o1, o2) -> o1.getFee().compareTo(o2.getFee()));
+                        break;
+                    case "HIGH_TO_LOW":
+                        doctors.sort((o1, o2) -> o2.getFee().compareTo(o1.getFee()));
+                        break;
+                    case "RANGE":
+                        if (feeFrom == null || feeTo == null) {
+                            throw new BadRequestException("Fee range is required");
+                        }
+                        if (feeFrom >= feeTo) {
+                            throw new BadRequestException("Invalid fee range");
+                        }
+                        doctors.removeIf(doctor -> doctor.getFee() < feeFrom || doctor.getFee() > feeTo);
+                        break;
                 }
             }
-//        if (ratings != null || ratings != 0.0) {
-//            doctors.removeIf(doctor -> ratingRepo.getAverageRatingForUser(doctor) == null || ratingRepo.getAverageRatingForUser(doctor) < ratings);
-//        }
-            if (popular != null){
+            if (ratings != null || ratings != 0.0) {
+                doctors.removeIf(doctor -> ratingRepo.getAverageRatingForUser(doctor) == null || ratingRepo.getAverageRatingForUser(doctor) < ratings);
+            }
+            if (popular != null) {
                 doctors.removeIf(doctor -> doctor.isPopular() != popular);
             }
             List<DoctorResponse> responses = new ArrayList<>();
@@ -366,11 +353,9 @@ public class DoctorService {
                 responses.add(doctorResponse);
             }
             return ResponseEntity.ok(responses);
-        }
-        catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }

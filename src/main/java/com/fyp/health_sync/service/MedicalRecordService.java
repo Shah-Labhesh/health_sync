@@ -27,10 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +40,7 @@ public class MedicalRecordService {
     private final PushNotificationService pushNotificationService;
     private final FirebaseTokenRepo firebaseTokenRepo;
 
-    public ResponseEntity<?> uploadRecord(AddMedicalRecordDto recordDto) throws BadRequestException,  InternalServerErrorException {
+    public ResponseEntity<?> uploadRecord(AddMedicalRecordDto recordDto) throws BadRequestException, InternalServerErrorException {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String email = auth.getName();
@@ -61,11 +58,9 @@ public class MedicalRecordService {
                     .build();
             medicalRecordRepo.save(medicalRecords);
             return ResponseEntity.created(null).body(new RecordResponse().castToResponse(medicalRecords));
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             throw new InternalServerErrorException(e.getMessage());
         }
@@ -94,26 +89,23 @@ public class MedicalRecordService {
                     .build();
             medicalRecordRepo.save(medicalRecords);
 
-            notificationService.sendNotification(medicalRecords.getId(),"You have a new medical record from Dr. "+medicalRecords.getDoctor().getName(),NotificationType.MEDICAL_REPORT, medicalRecords.getUser().getId());
+            notificationService.sendNotification(medicalRecords.getId(), "You have a new medical record from Dr. " + medicalRecords.getDoctor().getName(), NotificationType.MEDICAL_REPORT, medicalRecords.getUser().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(patient)) {
-                pushNotificationService.sendNotification("New Medical Record", "You have a new medical record from Dr. "+medicalRecords.getDoctor().getName(), token.getToken());
+                pushNotificationService.sendNotification("New Medical Record", "You have a new medical record from Dr. " + medicalRecords.getDoctor().getName(), token.getToken());
             }
 
             RecordResponse recordResponse = new RecordResponse().castToResponse(medicalRecords);
 
             return ResponseEntity.created(null).body(recordResponse);
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> getAllRecordByUser(String sort) throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        try
-        {
+        try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String email = auth.getName();
             Users user = userRepo.findByEmail(email);
@@ -145,21 +137,18 @@ public class MedicalRecordService {
             } else {
                 throw new BadRequestException("sort parameter: ALL, SHARED");
             }
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (ForbiddenException e) {
+        } catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
 
     }
 
     public ResponseEntity<?> getAllRecordByDoctor(String sort) throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        try{
+        try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String email = auth.getName();
             Users doctor = userRepo.findByEmail(email);
@@ -188,20 +177,55 @@ public class MedicalRecordService {
             } else {
                 throw new BadRequestException("sort parameter : ALL, SHARED");
             }
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (ForbiddenException e) {
+        } catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
-        catch (Exception e) {
+    }
+
+    // get shared record and shared record by doctor
+    public ResponseEntity<?> getSharedRecordByDoctor(UUID userId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            Users doctor = userRepo.findByEmail(email);
+            if (doctor == null) {
+                throw new BadRequestException("Doctor not found");
+            }
+            if (doctor.getRole() != UserRole.DOCTOR) {
+                throw new ForbiddenException("You are not authorized to view records");
+            }
+            Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
+            List<ShareMedicalRecords> records = shareRecordRepo.findByDoctorAndUser(doctor, user);
+//            List<MedicalRecords> medicalRecords = medicalRecordRepo.findByUserAndDeletedAtNull(user);
+//            List<RecordResponse> recordResponses = new ArrayList<>();
+            List<SharedRecordResponse> sharedRecordResponses = new ArrayList<>();
+//            for (MedicalRecords record : medicalRecords
+//            ) {
+//                recordResponses.add(new RecordResponse().castToResponse(record));
+//            }
+            for (ShareMedicalRecords record : records
+            ) {
+                sharedRecordResponses.add(new SharedRecordResponse().castToResponse(record));
+            }
+//            Map<String, Object> response = new HashMap<>();
+//            response.put("shared", sharedRecordResponses);
+//            response.put("records", recordResponses);
+            return ResponseEntity.ok().body(sharedRecordResponses);
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> getRecordById(UUID recordId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        try{
+        try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String email = auth.getName();
             Users user = userRepo.findByEmail(email);
@@ -221,14 +245,11 @@ public class MedicalRecordService {
 
 
             return ResponseEntity.ok().body(records.get());
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (ForbiddenException e) {
+        } catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
 
@@ -249,15 +270,15 @@ public class MedicalRecordService {
             if (records.get().getDeletedAt() != null) {
                 throw new BadRequestException("Record not found");
             }
-            if (user.getRole() == UserRole.USER && records.get().isSelfAdded()){
+            if (user.getRole() == UserRole.USER && records.get().isSelfAdded()) {
                 if (!records.get().getUser().getId().equals(user.getId())) {
                     throw new ForbiddenException("You are not authorized to update this record");
                 }
-            }else if (user.getRole() == UserRole.DOCTOR && !records.get().isSelfAdded()){
+            } else if (user.getRole() == UserRole.DOCTOR && !records.get().isSelfAdded()) {
                 if (!records.get().getDoctor().getId().equals(user.getId())) {
                     throw new ForbiddenException("You are not authorized to update this record");
                 }
-            }else{
+            } else {
                 throw new ForbiddenException("You are not authorized to update this record");
             }
 
@@ -274,77 +295,71 @@ public class MedicalRecordService {
             medicalRecordRepo.save(records.get());
 
             return ResponseEntity.ok().body(new RecordResponse().castToResponse(records.get()));
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (ForbiddenException e) {
+        } catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> deleteMedicalRecord(UUID recordId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
-       try{
-           Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-           String email = auth.getName();
-           Users user = userRepo.findByEmail(email);
-           if (user == null) {
-               throw new BadRequestException("User not found");
-           }
-           Optional<MedicalRecords> records = medicalRecordRepo.findById(recordId);
-           if (records.isEmpty()) {
-               throw new BadRequestException("Record not found");
-           }
-           if (!records.get().getUser().getId().equals(user.getId())) {
-               throw new ForbiddenException("You are not authorized to delete this record");
-           }
-           records.get().setDeletedAt(LocalDateTime.now());
-           medicalRecordRepo.save(records.get());
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            Users user = userRepo.findByEmail(email);
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            Optional<MedicalRecords> records = medicalRecordRepo.findById(recordId);
+            if (records.isEmpty()) {
+                throw new BadRequestException("Record not found");
+            }
+            if (!records.get().getUser().getId().equals(user.getId())) {
+                throw new ForbiddenException("You are not authorized to delete this record");
+            }
+            records.get().setDeletedAt(LocalDateTime.now());
+            medicalRecordRepo.save(records.get());
 
-           return ResponseEntity.ok().body(new SuccessResponse("Record deleted successfully"));
-       }
-       catch (BadRequestException e) {
-           throw new BadRequestException(e.getMessage());
-       }
-       catch (ForbiddenException e) {
-           throw new ForbiddenException(e.getMessage());
-       }
-       catch (Exception e) {
-           throw new InternalServerErrorException(e.getMessage());
-       }
+            return ResponseEntity.ok().body(new SuccessResponse("Record deleted successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
     }
 
     public ResponseEntity<?> shareMedicalRecord(UUID recordId, UUID doctorId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        Users user = userRepo.findByEmail(email);
-        if (user == null) {
-            throw new BadRequestException("User not found");
-        }
-        System.out.println(recordId);
-        Optional<MedicalRecords> records = medicalRecordRepo.findById(recordId);
-        if (records.isEmpty()) {
-            throw new BadRequestException("Record not found");
-        }
-        if (!records.get().getUser().getId().equals(user.getId())) {
-            throw new ForbiddenException("You are not authorized to share this record");
-        }
-        Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
-        if (doctor.getRole() != UserRole.DOCTOR) {
-            throw new BadRequestException("Doctor not found");
-        }
-        // check if record is already shared
-        if (shareRecordRepo.findByMedicalRecordsAndDoctor(records.get(), doctor).isPresent()) {
-            throw new BadRequestException("Record already shared with this doctor");
-        }
-        // check if record is added by same doctor
-        if (records.get().getDoctor() != null && records.get().getDoctor().getId().equals(doctor.getId())) {
-            throw new BadRequestException("Record added by same doctor");
-        }
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            Users user = userRepo.findByEmail(email);
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            System.out.println(recordId);
+            Optional<MedicalRecords> records = medicalRecordRepo.findById(recordId);
+            if (records.isEmpty()) {
+                throw new BadRequestException("Record not found");
+            }
+            if (!records.get().getUser().getId().equals(user.getId())) {
+                throw new ForbiddenException("You are not authorized to share this record");
+            }
+            Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
+            if (doctor.getRole() != UserRole.DOCTOR) {
+                throw new BadRequestException("Doctor not found");
+            }
+            // check if record is already shared
+            if (shareRecordRepo.findByMedicalRecordsAndDoctor(records.get(), doctor).isPresent()) {
+                throw new BadRequestException("Record already shared with this doctor");
+            }
+            // check if record is added by same doctor
+            if (records.get().getDoctor() != null && records.get().getDoctor().getId().equals(doctor.getId())) {
+                throw new BadRequestException("Record added by same doctor");
+            }
             ShareMedicalRecords shareMedicalRecords = ShareMedicalRecords.builder()
                     .medicalRecords(records.get())
                     .doctor(doctor)
@@ -357,20 +372,17 @@ public class MedicalRecordService {
                 pushNotificationService.sendNotification("New Medical Record", shareMedicalRecords.getUser().getName() + " shared a medical record to you", token.getToken());
             }
             return ResponseEntity.created(null).body(new SuccessResponse("Record shared successfully"));
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (ForbiddenException e) {
+        } catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> revokeMedicalRecord(UUID recordId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        try{
+        try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String email = auth.getName();
             Users user = userRepo.findByEmail(email);
@@ -388,14 +400,11 @@ public class MedicalRecordService {
 
             shareRecordRepo.delete(records.get());
             return ResponseEntity.ok().body(new SuccessResponse("Record revoked successfully"));
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (ForbiddenException e) {
+        } catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }

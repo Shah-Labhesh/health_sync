@@ -4,6 +4,7 @@ package com.fyp.health_sync.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fyp.health_sync.dtos.*;
 import com.fyp.health_sync.exception.BadRequestException;
+import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,6 +78,20 @@ public class UserController {
     @PostMapping("/data-removal")
     public ResponseEntity<?> requestForDataRemoval(@RequestBody @Valid DataRemovalRequestDto request) throws BadRequestException, InternalServerErrorException {
         return userService.requestForDataRemoval(request);
+    }
+
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Get all data removal requests", tags = {"User"} , description = "UserRole.USER, UserRole.DOCTOR")
+    @GetMapping("/data-removal")
+    public ResponseEntity<?> getAllDataRemovalRequests() throws BadRequestException, InternalServerErrorException {
+        return userService.getRequests();
+    }
+
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary="request for approval of account", tags = {"User"} , description = "UserRole.DOCTOR")
+    @PostMapping("/approval")
+    public ResponseEntity<?> requestForApproval() throws BadRequestException, InternalServerErrorException, ForbiddenException {
+        return userService.requestForApproval();
     }
 
 }

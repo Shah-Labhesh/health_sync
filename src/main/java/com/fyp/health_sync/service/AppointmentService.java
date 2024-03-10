@@ -307,6 +307,8 @@ public class AppointmentService {
         List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime.now().minusHours(3));
         for (Appointments appointment : appointments) {
             if (appointment.getPaymentStatus() == PaymentStatus.PENDING) {
+                appointment.getSlot().setIsBooked(false);
+                slotRepo.save(appointment.getSlot());
                appointmentRepo.delete(appointment);
                 notificationService.sendNotification(appointment.getId(), "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", NotificationType.APPOINTMENT, appointment.getUser().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {

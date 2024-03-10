@@ -78,4 +78,10 @@ public class MedicalRecordController {
     public ResponseEntity<?> revokeMedicalRecord(@PathVariable UUID recordId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return medicalRecordService.revokeMedicalRecord(recordId);
     }
+
+    @Operation(summary = "Get shared Medical Record by user", description = "UserRole.DOCTOR", tags = {"Medical Record"})
+    @GetMapping("/shared/{userId}")
+    public ResponseEntity<?> getSharedMedicalRecordByUser(@PathVariable UUID userId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+        return medicalRecordService.getSharedRecordByDoctor(userId);
+    }
 }

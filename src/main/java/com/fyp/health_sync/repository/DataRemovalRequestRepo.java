@@ -2,7 +2,6 @@ package com.fyp.health_sync.repository;
 
 import com.fyp.health_sync.entity.DataRemovalRequest;
 import com.fyp.health_sync.entity.Users;
-import com.fyp.health_sync.enums.RemovalType;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,4 +13,6 @@ import java.util.UUID;
 public interface DataRemovalRequestRepo extends JpaRepository<DataRemovalRequest, UUID>{
 
     List<DataRemovalRequest> findAllByUserAndType(Users user, String type);
+
+    List<DataRemovalRequest> findAllByUser(Users user);
 }
