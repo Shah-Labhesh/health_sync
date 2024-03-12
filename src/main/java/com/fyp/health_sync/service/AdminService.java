@@ -1,6 +1,5 @@
 package com.fyp.health_sync.service;
 
-
 import com.fyp.health_sync.entity.DataRemovalRequest;
 import com.fyp.health_sync.entity.MedicalRecords;
 import com.fyp.health_sync.entity.Prescriptions;
@@ -33,17 +32,25 @@ public class AdminService {
     private final DataRemovalRequestRepo dataRemovalRequestRepo;
     private final MedicalRecordRepo medicalRecordRepo;
     private final PrescriptionRepo prescriptionRepo;
+    private final MailService mailService;
 
-
-    public ResponseEntity<?> updateApprovedStatus(UUID id, Boolean status) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> updateApprovedStatus(UUID id, Boolean status, String message)
+            throws BadRequestException, InternalServerErrorException {
         try {
             Users doctor = userRepo.findById(id).orElseThrow(() -> new BadRequestException("Doctor not found"));
 
             if (doctor.getStatus() != UserStatus.ACTIVE) {
                 throw new BadRequestException("Doctor account is not active");
             }
-            if (doctor.getApproved() == status) {
-                throw new BadRequestException("Status already updated");
+            
+
+            if (!status) {
+                if (message == null || message.isEmpty()) {
+                    throw new BadRequestException("Message is required for rejection");
+                } else {
+                    mailService.sendApprovalRejectEmail(doctor.getEmail(), "Dr. " + doctor.getName(), message);
+                    return ResponseEntity.ok(new SuccessResponse("Rejection message sent successfully"));
+                }
             }
 
             doctor.setApproved(status);
@@ -57,7 +64,8 @@ public class AdminService {
         }
     }
 
-    public ResponseEntity<?> updatePopularStatus(UUID id, Boolean status) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> updatePopularStatus(UUID id, Boolean status)
+            throws BadRequestException, InternalServerErrorException {
         try {
             Users doctor = userRepo.findById(id).orElseThrow(() -> new BadRequestException("Doctor not found"));
 
@@ -83,7 +91,8 @@ public class AdminService {
     }
 
     // delete user
-    public ResponseEntity<?> changeAccountStatus(UUID id, UserStatus status) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> changeAccountStatus(UUID id, UserStatus status)
+            throws BadRequestException, InternalServerErrorException {
         try {
             Users user = userRepo.findById(id).orElseThrow(() -> new BadRequestException("User not found"));
 
@@ -106,7 +115,6 @@ public class AdminService {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
-
 
     // delete user permanently
     @Transactional
@@ -131,29 +139,26 @@ public class AdminService {
     // restore user
     public ResponseEntity<?> restoreUser(UUID userId) throws BadRequestException, InternalServerErrorException {
         try {
-        Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
+            Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
 
-        if (user.getStatus() != UserStatus.DELETED) {
-            throw new BadRequestException("User not found in trash");
-        }
-
+            if (user.getStatus() != UserStatus.DELETED) {
+                throw new BadRequestException("User not found in trash");
+            }
 
             user.setDeletedAt(null);
             user.setStatus(UserStatus.ACTIVE);
             userRepo.save(user);
 
             return ResponseEntity.ok(new SuccessResponse("User restored successfully"));
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
 
     }
 
-    //getAllSoftDeletedUsers
+    // getAllSoftDeletedUsers
     private List<UserResponse> getUsersByStatus(UserStatus status) throws InternalServerErrorException {
         try {
             List<Users> users = userRepo.findAllByStatusAndRole(status, UserRole.USER);
@@ -163,8 +168,7 @@ public class AdminService {
             }
 
             return response;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
@@ -182,8 +186,7 @@ public class AdminService {
         }
     }
 
-    //getAllSoftDeletedDoctors
-
+    // getAllSoftDeletedDoctors
 
     public List<DoctorResponse> getAllUnapprovedDoctors() throws InternalServerErrorException {
         try {
@@ -203,7 +206,6 @@ public class AdminService {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
-
 
     public ResponseEntity<?> getDashboardData() throws InternalServerErrorException {
         try {
@@ -247,12 +249,10 @@ public class AdminService {
         }
     }
 
-
     public ResponseEntity<?> getAllDataRemovalRequests() throws InternalServerErrorException {
         try {
             List<RemovalRequestResponse> response = new ArrayList<>();
-            for (DataRemovalRequest request: dataRemovalRequestRepo.findAll()
-                 ) {
+            for (DataRemovalRequest request : dataRemovalRequestRepo.findAll()) {
                 response.add(new RemovalRequestResponse().castToResponse(request));
             }
             response.sort(Comparator.comparing(RemovalRequestResponse::getCreatedAt).reversed());
@@ -263,9 +263,11 @@ public class AdminService {
     }
 
     @Transactional
-    public ResponseEntity<?> acceptDataRemovalRequest(UUID requestId) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> acceptDataRemovalRequest(UUID requestId)
+            throws BadRequestException, InternalServerErrorException {
         try {
-            DataRemovalRequest request = dataRemovalRequestRepo.findById(requestId).orElseThrow(() -> new BadRequestException("Request not found"));
+            DataRemovalRequest request = dataRemovalRequestRepo.findById(requestId)
+                    .orElseThrow(() -> new BadRequestException("Request not found"));
             switch (request.getType()) {
                 case "ACCOUNT_DELETION" -> userRepo.delete(request.getUser());
                 case "MEDICAL_RECORDS_DELETION" -> {
@@ -291,10 +293,11 @@ public class AdminService {
     }
 
     @Transactional
-    public ResponseEntity<?> rejectDataRemovalRequest(UUID requestId) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> rejectDataRemovalRequest(UUID requestId)
+            throws BadRequestException, InternalServerErrorException {
         try {
-            DataRemovalRequest request = dataRemovalRequestRepo.findById(requestId).
-                    orElseThrow(() -> new BadRequestException("Request not found"));
+            DataRemovalRequest request = dataRemovalRequestRepo.findById(requestId)
+                    .orElseThrow(() -> new BadRequestException("Request not found"));
             request.setRejected(true);
             dataRemovalRequestRepo.save(request);
             return ResponseEntity.ok(new SuccessResponse("Data removal rejected successfully"));

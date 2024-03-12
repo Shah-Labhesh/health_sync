@@ -27,9 +27,9 @@ public class ShareMedicalRecords {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "medical_records", referencedColumnName = "id")
-    private MedicalRecords medicalRecords;
+    private boolean isAccepted;
+    private boolean isRejected;
+    private boolean isExpired;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")

@@ -10,8 +10,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -38,8 +40,8 @@ public class ContactController {
     }
 
     @Operation(summary = "Send Response of message to user", description = "UserRole.ADMIN", tags = {"Contact Us"})
-    @PostMapping("/response")
-    public ResponseEntity<?> responseMessage(String responseMessage, UUID id) throws InternalServerErrorException, BadRequestException, ForbiddenException {
-        return contactSupportService.responseMessage(responseMessage, id);
+    @PostMapping("/response/{messageId}")
+    public ResponseEntity<?> responseMessage(@RequestParam(required = false) String responseMessage,@PathVariable UUID messageId) throws InternalServerErrorException, BadRequestException, ForbiddenException {
+        return contactSupportService.responseMessage(responseMessage, messageId);
     }
 }

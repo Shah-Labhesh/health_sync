@@ -28,7 +28,7 @@ public class ContactSupport {
     private String email;
     private String message;
     private String responseMessage;
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")

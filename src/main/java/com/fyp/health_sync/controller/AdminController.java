@@ -31,8 +31,8 @@ public class AdminController {
 
     @Operation(summary = "Update approved status of doctor", description = "UserRole.ADMIN", tags = {"Admin"})
     @PutMapping("/approve-status/{doctorId}/{status}")
-    public ResponseEntity<?> updateApprovedStatus(@PathVariable UUID doctorId, @PathVariable Boolean status) throws BadRequestException, InternalServerErrorException {
-        return adminService.updateApprovedStatus(doctorId, status);
+    public ResponseEntity<?> updateApprovedStatus(@PathVariable UUID doctorId, @PathVariable Boolean status, @RequestParam(required = false) String message) throws BadRequestException, InternalServerErrorException {
+        return adminService.updateApprovedStatus(doctorId, status, message);
     }
 
     @Operation(summary = "Update popular status of doctor",description = "UserRole.ADMIN", tags = {"Admin"})

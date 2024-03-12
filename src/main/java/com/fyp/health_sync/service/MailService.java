@@ -152,13 +152,20 @@ public class MailService {
         sendMail(from, subject, message);
     }
 
-    private String generateApprovalEmailTemplate(String name) {
+    @Async
+    public void sendApprovalRejectEmail(String email, String name, String message) throws InternalServerErrorException {
+        String subject = "Health sync - Account Approval Rejected";
+        String temp = generateApprovalRejectEmailTemplate(name, message);
+        sendMail(email, subject, temp);
+    }
+
+    private String generateApprovalRejectEmailTemplate(String name, String message) {
         return "<!DOCTYPE html>\n" +
                 "<html lang=\"en\">\n" +
                 "<head>\n" +
                 "<meta charset=\"UTF-8\">\n" +
                 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "<title>Account Approval</title>\n" +
+                "<title>Account Approval Rejected</title>\n" +
                 "<style>\n" +
                 "  /* Reset styles */\n" +
                 "  body, html {\n" +
@@ -199,10 +206,10 @@ public class MailService {
                 "</head>\n" +
                 "<body>\n" +
                 "  <div class=\"container   \">\n" +
-                "    <h1>Account Approval</h1>\n" +
+                "    <h1>Account Approval Rejected</h1>\n" +
                 "    <p>Dear " + name + ",</p>\n" +
                 "    <div class=\"message\">\n" +
-                "      <p>Your account has been approved by the admin. You can now login to your account and start using our services.</p>\n" +
+                "      <p>"+message+"</p>\n" +
                 "    </div>\n" +
 
                 "  </div>\n" +

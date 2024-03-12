@@ -22,25 +22,9 @@ import java.util.UUID;
 public class NotificationService {
 
     private final NotificationRepo notificationRepo;
-    private final ShareRecordRepo shareRecordRepo;
     private final UserRepo userRepo;
-    private final AppointmentRepo appointmentRepo;
-    private final RatingRepo ratingRepo;
-    private final MedicalRecordRepo medicalRecordRepo;
-    private final PrescriptionRepo prescriptionRepo;
-    private final ChatRoomRepo chatRoomRepo;
-    private final PaymentRepo paymentRepo;
-    private final ViewPrescriptionPermissionRepo viewPPRepo;
 
-    /*
-    APPOINTMENT,
-    PRESCRIPTION,
-    MEDICAL_REPORT,
-    CHAT,
-    PAYMENT,
-    ACCOUNT,
-    REVIEW,
-     */
+
 
     public ResponseEntity<?> unreadNotificationsCount() throws BadRequestException, InternalServerErrorException {
         try {
@@ -102,35 +86,6 @@ public class NotificationService {
     public void sendNotification(UUID id, String message, NotificationType notificationType, UUID receiverId) throws BadRequestException, InternalServerErrorException {
         try {
             Users receiver = userRepo.findById(receiverId).orElseThrow(() -> new BadRequestException("User not found"));
-            Object target = null;
-            switch (notificationType) {
-                case APPOINTMENT -> {
-                    target = appointmentRepo.findById(id).orElseThrow(() -> new BadRequestException("Appointment not found"));
-                }
-                case PRESCRIPTION -> {
-                    target = prescriptionRepo.findById(id).orElseThrow(() -> new BadRequestException("Prescription not found"));
-                }
-                case MEDICAL_REPORT -> {
-                    target = medicalRecordRepo.findById(id).orElseThrow(() -> new BadRequestException("Medical Report not found"));
-                }
-                case CHAT -> {
-                    target = chatRoomRepo.findById(id).orElseThrow(() -> new BadRequestException("Chat Room not found"));
-                }
-                case PAYMENT -> {
-                    target = paymentRepo.findById(id).orElseThrow(() -> new BadRequestException("Payment not found"));
-                }
-                case REVIEW -> {
-                    target = ratingRepo.findById(id).orElseThrow(() -> new BadRequestException("Rating not found"));
-                }
-                case SHARE_RECORD -> {
-                    target = shareRecordRepo.findById(id).orElseThrow(() -> new BadRequestException("Record not found"));
-                }
-                case PRESCRIPTION_REQUEST -> {
-                    target = viewPPRepo.findById(id).orElseThrow(() -> new BadRequestException("Prescription not found"));
-                }
-
-            }
-
             notificationRepo.save(Notification.builder()
                     .targetId(id)
                     .type(notificationType)

@@ -2,7 +2,6 @@ package com.fyp.health_sync.utils;
 
 
 import com.fyp.health_sync.entity.ContactSupport;
-import com.fyp.health_sync.entity.Users;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

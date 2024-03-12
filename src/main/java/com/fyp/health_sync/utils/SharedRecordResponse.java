@@ -19,13 +19,18 @@ public class SharedRecordResponse {
     private UserResponse user;
     private DoctorResponse doctor;
     private RecordResponse medicalRecords;
+    private boolean isAccepted;
+    private boolean isRejected;
+    private boolean isExpired;
 
     public SharedRecordResponse castToResponse(ShareMedicalRecords shareMedicalRecords) {
         return SharedRecordResponse.builder()
                 .id(shareMedicalRecords.getId())
                 .user(shareMedicalRecords.getUser() == null ? null : new UserResponse().castToResponse(shareMedicalRecords.getUser()))
                 .doctor(shareMedicalRecords.getDoctor() == null ? null : new DoctorResponse().castToResponse(shareMedicalRecords.getDoctor()))
-                .medicalRecords(new RecordResponse().castToResponse(shareMedicalRecords.getMedicalRecords()))
+                .isAccepted(shareMedicalRecords.isAccepted())
+                .isRejected(shareMedicalRecords.isRejected())
+                .isExpired(shareMedicalRecords.isExpired())
                 .build();
     }
 }

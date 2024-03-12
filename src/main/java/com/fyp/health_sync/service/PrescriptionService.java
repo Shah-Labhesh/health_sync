@@ -146,7 +146,7 @@ public class PrescriptionService {
                         .build();
             }
             viewPPRepo.save(permission);
-            notificationService.sendNotification(permission.getId(), "Dr. " + doctor.getName() + " has requested to view your prescription", NotificationType.PRESCRIPTION_REQUEST, permission.getUser().getId());
+            notificationService.sendNotification(permission.getId(), "Dr. " + doctor.getName() + " has requested to view your prescription", NotificationType.PRESCRIPTION_PERMISSION, permission.getUser().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(user)) {
                 pushNotificationService.sendNotification("Prescription Request", "Dr. " + doctor.getName() + " has requested to view your prescription", token.getToken());
             }
@@ -230,22 +230,23 @@ public class PrescriptionService {
             }
             viewPPRepo.save(permission);
             if (isAccepted) {
-                notificationService.sendNotification(permission.getId(), user.getName() + " has accepted your request to view prescription", NotificationType.PRESCRIPTION_REQUEST, permission.getDoctor().getId());
+                notificationService.sendNotification(permission.getId(), user.getName() + " has accepted your request to view prescription", NotificationType.PRESCRIPTION_PERMISSION, permission.getDoctor().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(permission.getUser())) {
                     pushNotificationService.sendNotification("Prescription Request",  user.getName() + " has accepted your request to view prescription", token.getToken());
                 }
             } else {
-                notificationService.sendNotification(permission.getId(), user.getName() + " has rejected your request to view prescription", NotificationType.PRESCRIPTION_REQUEST, permission.getDoctor().getId());
+                notificationService.sendNotification(permission.getId(), user.getName() + " has rejected your request to view prescription", NotificationType.PRESCRIPTION_PERMISSION, permission.getDoctor().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(permission.getUser())) {
                     pushNotificationService.sendNotification("Prescription Request",  user.getName() + " has rejected your request to view prescription", token.getToken());
                 }
             }
-            return ResponseEntity.ok(new SuccessResponse("Request " + (isAccepted ? "accepted" : "rejected") + " successfully"));
+            return ResponseEntity.created (null).body(new SuccessResponse("Request " + (isAccepted ? "accepted" : "rejected") + " successfully"));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (ForbiddenException e) {
             throw new ForbiddenException(e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             throw new InternalServerErrorException(e.getMessage());
         }
     }
