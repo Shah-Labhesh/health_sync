@@ -7,8 +7,6 @@ import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.AuthService;
 
 import com.fyp.health_sync.service.FirebaseAuthenticationService;
-import com.fyp.health_sync.utils.SuccessResponse;
-import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -84,5 +82,6 @@ public class AuthenticationController {
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword) throws BadRequestException, InternalServerErrorException {
         return authService.resetPassword(resetPassword);
     }
+
 
 }

@@ -1,7 +1,6 @@
 package com.fyp.health_sync.service;
 
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,6 @@ public class PushNotificationService {
 
             firebaseMessaging.send(message);
         } catch (Exception Ignored) {
-            // TODO Auto-generated catch e.printStackTrace();
         }
     }
 }

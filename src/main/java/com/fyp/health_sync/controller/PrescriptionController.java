@@ -2,7 +2,6 @@ package com.fyp.health_sync.controller;
 
 
 import com.fyp.health_sync.dtos.UploadPrescriptionDto;
-import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;

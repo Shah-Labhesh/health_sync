@@ -110,7 +110,7 @@ public class MedicalRecordService {
         }
     }
 
-    public ResponseEntity<?> getAllRecordByUser(String sort)
+    public ResponseEntity<?> getAllRecordByUser()
             throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -124,24 +124,14 @@ public class MedicalRecordService {
                 throw new ForbiddenException("You are not authorized to view records");
             }
 
-            if (sort.equals("ALL")) {
+           
                 List<MedicalRecords> records = medicalRecordRepo.findByUserAndDeletedAtNull(user);
                 List<RecordResponse> recordResponses = new ArrayList<>();
                 for (MedicalRecords record : records) {
                     recordResponses.add(new RecordResponse().castToResponse(record));
                 }
                 return ResponseEntity.ok().body(recordResponses);
-            } else if (sort.equals("SHARED")) {
-
-                List<ShareMedicalRecords> records = shareRecordRepo.findByUser(user);
-                List<SharedRecordResponse> recordResponses = new ArrayList<>();
-                for (ShareMedicalRecords record : records) {
-                    recordResponses.add(new SharedRecordResponse().castToResponse(record));
-                }
-                return ResponseEntity.ok().body(recordResponses);
-            } else {
-                throw new BadRequestException("sort parameter: ALL, SHARED");
-            }
+           
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (ForbiddenException e) {
@@ -319,14 +309,17 @@ public class MedicalRecordService {
             }
 
             Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("user not found"));
-            if (user.getRole() != UserRole.DOCTOR) {
-                throw new BadRequestException("Doctor not found");
+            if (user.getRole() != UserRole.USER) {
+                throw new ForbiddenException("You are not authorized to request for viewing record");
             }
             List<ShareMedicalRecords> records = shareRecordRepo.findByDoctorAndUser(doctor, user);
             if (records != null) {
                 for (ShareMedicalRecords record : records) {
                     if (record.isAccepted()) {
                         throw new BadRequestException("You already have permission to view this record");
+                    }
+                    if (!record.isRejected()) {
+                        throw new BadRequestException("Your Have already requested for permission to view this record");
                     }
                 }
             }

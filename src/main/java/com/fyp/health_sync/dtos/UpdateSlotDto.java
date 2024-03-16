@@ -2,7 +2,6 @@ package com.fyp.health_sync.dtos;
 
 
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

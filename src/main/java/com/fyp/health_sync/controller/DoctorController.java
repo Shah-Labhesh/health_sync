@@ -77,7 +77,7 @@ public class DoctorController {
                                            @RequestParam(required = false) Integer feeFrom,
                                            @RequestParam(required = false) Integer feeTo,
                                            @RequestParam(required= false) Boolean popular,
-                                           @RequestParam(required = false) Double ratings) throws BadRequestException, InternalServerErrorException {
+                                           @RequestParam(required = true) double ratings) throws BadRequestException, InternalServerErrorException {
         return doctorService.filterDoctors(latitude, longitude,searchText, speciality, feeType, feeFrom, feeTo, ratings, popular);
     }
 

@@ -17,6 +17,7 @@ import com.fyp.health_sync.repository.FirebaseTokenRepo;
 import com.fyp.health_sync.repository.SlotRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.AppointmentResponse;
+import com.fyp.health_sync.utils.SuccessResponse;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -268,6 +270,40 @@ public class AppointmentService {
         }
     }
 
+    // cancel appointment by user only if payment is pending
+    @Transactional
+    public ResponseEntity<?> cancelAppointment(UUID appointmentId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Users user = userRepo.findByEmail(authentication.getName());
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            if (user.getRole() != UserRole.USER) {
+                throw new ForbiddenException("You are not authorized to cancel appointment");
+            }
+            Appointments appointments = appointmentRepo.findById(appointmentId).orElseThrow(() -> new BadRequestException("Appointment not found"));
+            if (appointments.getUser().getId().equals(user.getId())) {
+                if (appointments.getPaymentStatus() == PaymentStatus.PENDING) {
+                    appointments.getSlot().setIsBooked(false);
+                    slotRepo.save(appointments.getSlot());
+                    appointmentRepo.delete(appointments);
+                    return ResponseEntity.ok(new SuccessResponse("Appointment has been successfully canceled"));
+                } else {
+                    throw new BadRequestException("You can't cancel this appointment as payment is completed");
+                }
+            } else {
+                throw new ForbiddenException("You are not authorized to cancel this appointment");
+            }
+        } catch (BadRequestException ex) {
+            throw new BadRequestException(ex.getMessage());
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
     // schedule appointment auto expire
     @Scheduled(fixedRate = 60000)
     public void scheduleAppointmentExpire() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
@@ -306,13 +342,16 @@ public class AppointmentService {
     public void scheduleAppointmentDelete() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
         List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime.now().minusHours(3));
         for (Appointments appointment : appointments) {
+            if (appointment.getCreatedAt().isEqual(appointment.getCreatedAt().plusMinutes(5))){
+                continue;
+            }
             if (appointment.getPaymentStatus() == PaymentStatus.PENDING) {
                 appointment.getSlot().setIsBooked(false);
                 slotRepo.save(appointment.getSlot());
                appointmentRepo.delete(appointment);
                 notificationService.sendNotification(appointment.getId(), "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", NotificationType.APPOINTMENT, appointment.getUser().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
-                    pushNotificationService.sendNotification("Appointment Expired", "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", token.getToken());
+                    pushNotificationService.sendNotification("Appointment Cancelled", "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", token.getToken());
                 }
             }
         }

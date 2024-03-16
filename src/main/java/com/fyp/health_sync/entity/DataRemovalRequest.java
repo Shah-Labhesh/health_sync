@@ -1,6 +1,5 @@
 package com.fyp.health_sync.entity;
 
-import com.fyp.health_sync.enums.RemovalType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

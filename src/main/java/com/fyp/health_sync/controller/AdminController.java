@@ -5,8 +5,10 @@ import com.fyp.health_sync.dtos.AddSpecialityDto;
 import com.fyp.health_sync.dtos.UpdateSpecialityDto;
 import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
+import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.AdminService;
+import com.fyp.health_sync.service.PaymentService;
 import com.fyp.health_sync.service.RatingService;
 import com.fyp.health_sync.service.SpecialityService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +30,7 @@ public class AdminController {
     private final AdminService adminService;
     private final SpecialityService specialityService;
     private final RatingService ratingService;
+    private final PaymentService paymentService;
 
     @Operation(summary = "Update approved status of doctor", description = "UserRole.ADMIN", tags = {"Admin"})
     @PutMapping("/approve-status/{doctorId}/{status}")
@@ -128,5 +131,11 @@ public class AdminController {
     @PutMapping("/reject-data-removal/{requestId}")
     public ResponseEntity<?> rejectDataRemovalRequest(@PathVariable UUID requestId) throws BadRequestException, InternalServerErrorException {
         return adminService.rejectDataRemovalRequest(requestId);
+    }
+
+    @Operation(summary = "get all payments",description = "UserRole.ADMIN", tags = {"Admin"})
+    @GetMapping("/payments")
+    public ResponseEntity<?> getAllPayments() throws InternalServerErrorException, ForbiddenException, BadRequestException {
+        return paymentService.getAllPayments();
     }
 }

@@ -1,6 +1,5 @@
 package com.fyp.health_sync.entity;
 
-import com.fyp.health_sync.enums.AppointmentType;
 import com.fyp.health_sync.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

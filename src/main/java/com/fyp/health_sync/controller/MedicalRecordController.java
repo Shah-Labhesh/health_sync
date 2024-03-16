@@ -39,8 +39,8 @@ public class MedicalRecordController {
 
     @Operation(summary = "Get all Medical Record by self",description = "UserRole.USER",tags = {"Medical Record"})
     @GetMapping
-    public ResponseEntity<?> getAllMedicalRecordOfUser(@RequestParam(required = true,defaultValue = "ALL") String sort) throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        return medicalRecordService.getAllRecordByUser(sort);
+    public ResponseEntity<?> getAllMedicalRecordOfUser() throws BadRequestException, ForbiddenException, InternalServerErrorException {
+        return medicalRecordService.getAllRecordByUser();
     }
 
     @Operation(summary = "Get all Medical Record of user", description = "UserRole.DOCTOR", tags = {"Medical Record"})
@@ -68,7 +68,7 @@ public class MedicalRecordController {
 //    }
 
     @Operation(summary = "accept or reject permission to view reocrds", description = "UserRole.USER", tags = {"Medical Record"})
-    @PostMapping("/approval/{requestId}/{value}")
+    @PutMapping("/approval/{requestId}/{value}")
     public ResponseEntity<?> acceptOrRejectRecord( @PathVariable UUID requestId, @PathVariable boolean value) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         return medicalRecordService.acceptOrRejectRecord(requestId,value);
     }

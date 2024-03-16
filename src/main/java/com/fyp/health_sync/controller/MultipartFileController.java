@@ -4,8 +4,6 @@ package com.fyp.health_sync.controller;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.MultipartFileService;
-import com.fyp.health_sync.service.QualificationService;
-import com.fyp.health_sync.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

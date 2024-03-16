@@ -301,7 +301,7 @@ public class DoctorService {
         }
     }
 
-    public ResponseEntity<?> filterDoctors(double latitude, double longitude, String text, UUID speciality, String feeType, Integer feeFrom, Integer feeTo, Double ratings, Boolean popular) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> filterDoctors(double latitude, double longitude, String text, UUID speciality, String feeType, Integer feeFrom, Integer feeTo, double ratings, Boolean popular) throws BadRequestException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -336,7 +336,7 @@ public class DoctorService {
                         break;
                 }
             }
-            if (ratings != null || ratings != 0.0) {
+            if (ratings != 0.0) {
                 doctors.removeIf(doctor -> ratingRepo.getAverageRatingForUser(doctor) == null || ratingRepo.getAverageRatingForUser(doctor) < ratings);
             }
             if (popular != null) {

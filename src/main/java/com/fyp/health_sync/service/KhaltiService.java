@@ -20,28 +20,22 @@ import com.fyp.health_sync.repository.FirebaseTokenRepo;
 import com.fyp.health_sync.repository.PaymentRepo;
 import com.fyp.health_sync.repository.UserRepo;
 import com.fyp.health_sync.utils.SuccessResponse;
-import com.google.api.Http;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
 import lombok.RequiredArgsConstructor;
 
-import org.checkerframework.checker.units.qual.t;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -153,6 +147,8 @@ public class KhaltiService {
             if (idx == null){
                 throw new BadRequestException("Transaction not verified");
             }
+
+            appointment.setPaymentStatus(PaymentStatus.SUCCESS);
             Payment payment = Payment.builder()
                     .amount(appointment.getAppointmentFee())
                     .createdAt(LocalDateTime.now())

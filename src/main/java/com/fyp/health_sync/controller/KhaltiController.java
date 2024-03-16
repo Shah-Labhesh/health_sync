@@ -1,6 +1,5 @@
 package com.fyp.health_sync.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fyp.health_sync.dtos.ConfirmRequestDto;
 import com.fyp.health_sync.dtos.KhaltiRequestDto;
 import com.fyp.health_sync.exception.BadRequestException;

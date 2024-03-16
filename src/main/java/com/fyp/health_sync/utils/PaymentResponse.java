@@ -1,7 +1,6 @@
 package com.fyp.health_sync.utils;
 
 import com.fyp.health_sync.entity.Payment;
-import com.fyp.health_sync.entity.Users;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +24,7 @@ public class PaymentResponse {
     private UserResponse user;
     private DoctorResponse doctor;
     private AppointmentResponse appointment;
+    private String transactionId;
 
     public PaymentResponse castToResponse(Payment payment) {
       return PaymentResponse.builder()
@@ -37,6 +37,7 @@ public class PaymentResponse {
               .user(payment.getUser() == null ? null : new UserResponse().castToResponse(payment.getUser()))
               .doctor(payment.getDoctor() == null ? null : new DoctorResponse().castToResponse(payment.getDoctor()))
                 .appointment(payment.getAppointment() == null ? null : new AppointmentResponse().castToResponse(payment.getAppointment()))
+                .transactionId(payment.getTransactionId())
               .build();
     }
 }

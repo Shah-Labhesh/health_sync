@@ -5,12 +5,13 @@ import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
 import com.fyp.health_sync.service.AppointmentService;
-import com.fyp.health_sync.service.PushNotificationService;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,5 +44,10 @@ public class AppointmentController {
         return appointmentService.getAllMyAppointment();
     }
 
+    @Operation(summary = "Cancel an appointment",description = "UserRole.USER",tags = {"Appointment"})
+    @DeleteMapping("/{appointmentId}")
+    public ResponseEntity<?> cancelAppointment(@PathVariable UUID appointmentId) throws BadRequestException, InternalServerErrorException, ForbiddenException {
+        return appointmentService.cancelAppointment(appointmentId);
+    }
 
 }

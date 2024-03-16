@@ -1,6 +1,5 @@
 package com.fyp.health_sync.utils;
 
-import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.entity.ViewPrescriptionPermission;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

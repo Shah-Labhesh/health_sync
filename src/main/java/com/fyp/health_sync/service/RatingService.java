@@ -2,7 +2,6 @@ package com.fyp.health_sync.service;
 
 
 import com.fyp.health_sync.dtos.RatingDto;
-import com.fyp.health_sync.entity.Appointments;
 import com.fyp.health_sync.entity.RatingReviews;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.RatingType;

@@ -1,7 +1,6 @@
 package com.fyp.health_sync.controller;
 
 
-import com.fyp.health_sync.dtos.AddMoreDetailsDto;
 import com.fyp.health_sync.dtos.QualificationDto;
 import com.fyp.health_sync.dtos.UpdateQualificationDto;
 import com.fyp.health_sync.exception.BadRequestException;

@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
 
@@ -43,7 +42,6 @@ public class MultipartFileService {
 
     private ResponseEntity<?> buildImageResponse(byte[] imageBytes, String filename) {
         ByteArrayResource resource = new ByteArrayResource(imageBytes);
-        MediaType mediaType = MediaType.IMAGE_PNG;
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")

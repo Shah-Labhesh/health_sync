@@ -2,7 +2,6 @@ package com.fyp.health_sync.dtos;
 
 
 import com.fyp.health_sync.enums.UserRole;
-import com.fyp.health_sync.validation.EnumValidator;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;

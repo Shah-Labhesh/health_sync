@@ -281,7 +281,6 @@ public class AdminService {
                 default -> throw new BadRequestException("Invalid removal type");
             }
 
-            List<MedicalRecords> records = medicalRecordRepo.findAllByUser(request.getUser());
             request.setAccepted(true);
             dataRemovalRequestRepo.save(request);
             return ResponseEntity.ok(new SuccessResponse("Data removal accepted successfully"));
