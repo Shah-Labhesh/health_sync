@@ -39,7 +39,7 @@ public class Users {
     private double latitude;
     private double longitude;
     private String address;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "speciality" , referencedColumnName = "id")
     private Speciality speciality;
     private String experience;

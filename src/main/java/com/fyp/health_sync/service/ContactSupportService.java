@@ -16,9 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +64,12 @@ public class ContactSupportService {
             for (ContactSupport contactSupport : contactSupports) {
                 contactSupportResponses.add(new ContactSupportResponse().castToResponse(contactSupport));
             }
-            return ResponseEntity.ok(contactSupportResponses);
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalMessage", contactSupportResponses.size() );
+            response.put("pendingResponse", contactSupportRepo.countAllByResponseMessageIsNull() );
+            response.put("totalResponse", contactSupportRepo.countAllByResponseMessageNotNull() );
+            response.put("contactSupport", contactSupportResponses);
+            return ResponseEntity.ok(response);
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (ForbiddenException e) {

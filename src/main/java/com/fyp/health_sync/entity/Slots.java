@@ -25,7 +25,7 @@ public class Slots {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @ManyToOne (fetch = FetchType.LAZY)
+    @ManyToOne (fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
     private LocalDateTime slotDateTime;

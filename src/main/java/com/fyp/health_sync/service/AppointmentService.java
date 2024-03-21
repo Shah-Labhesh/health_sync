@@ -283,18 +283,31 @@ public class AppointmentService {
                 throw new ForbiddenException("You are not authorized to cancel appointment");
             }
             Appointments appointments = appointmentRepo.findById(appointmentId).orElseThrow(() -> new BadRequestException("Appointment not found"));
-            if (appointments.getUser().getId().equals(user.getId())) {
-                if (appointments.getPaymentStatus() == PaymentStatus.PENDING) {
-                    appointments.getSlot().setIsBooked(false);
-                    slotRepo.save(appointments.getSlot());
-                    appointmentRepo.delete(appointments);
-                    return ResponseEntity.ok(new SuccessResponse("Appointment has been successfully canceled"));
-                } else {
-                    throw new BadRequestException("You can't cancel this appointment as payment is completed");
-                }
-            } else {
+            if (!appointments.getUser().getId().equals(user.getId())) {
                 throw new ForbiddenException("You are not authorized to cancel this appointment");
             }
+
+            if (appointments.getPaymentStatus() == PaymentStatus.SUCCESS) {
+
+
+                throw new BadRequestException("You can't cancel this appointment as payment is completed");
+            }
+
+            appointments.getSlot().setIsBooked(false);
+            slotRepo.save(appointments.getSlot());
+            appointmentRepo.delete(appointments);
+            notificationService.sendNotification(appointments.getId(), "Your appointment with Dr. " + appointments.getDoctor().getName() + " is cancelled", NotificationType.APPOINTMENT, appointments.getUser().getId());
+            for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointments.getUser())) {
+                pushNotificationService.sendNotification("Appointment Cancelled", "Your appointment with Dr. " + appointments.getDoctor().getName() + " is cancelled", token.getToken());
+            }
+            notificationService.sendNotification(appointments.getId(), "Your appointment with " + appointments.getUser().getName() + " is cancelled", NotificationType.APPOINTMENT, appointments.getDoctor().getId());
+            for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointments.getDoctor())) {
+                pushNotificationService.sendNotification("Appointment Cancelled", "Your appointment with " + appointments.getUser().getName() + " is cancelled", token.getToken());
+            }
+            return ResponseEntity.ok(new SuccessResponse("Appointment has been successfully canceled"));
+
+
+
         } catch (BadRequestException ex) {
             throw new BadRequestException(ex.getMessage());
         } catch (ForbiddenException e) {
@@ -326,7 +339,7 @@ public class AppointmentService {
             appointment.setReminderTime(null);
             appointmentRepo.save(appointment);
             notificationService.sendNotification(appointment.getId(), "You have appointment with Dr. " + appointment.getDoctor().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getUser().getId());
-            notificationService.sendNotification(appointment.getId(), "You have appointment with " + appointment.getUser().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getUser().getId());
+            notificationService.sendNotification(appointment.getId(), "You have appointment with " + appointment.getUser().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getDoctor().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
                 pushNotificationService.sendNotification("Appointment Reminder", "You have appointment with Dr. " + appointment.getDoctor().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), token.getToken());
             }
@@ -352,6 +365,10 @@ public class AppointmentService {
                 notificationService.sendNotification(appointment.getId(), "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", NotificationType.APPOINTMENT, appointment.getUser().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
                     pushNotificationService.sendNotification("Appointment Cancelled", "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", token.getToken());
+                }
+                notificationService.sendNotification(appointment.getId(), "Your appointment with " + appointment.getUser().getName() + " is cancelled", NotificationType.APPOINTMENT, appointment.getDoctor().getId());
+                for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getDoctor())) {
+                    pushNotificationService.sendNotification("Appointment Cancelled", "Your appointment with " + appointment.getUser().getName() + " is cancelled", token.getToken());
                 }
             }
         }

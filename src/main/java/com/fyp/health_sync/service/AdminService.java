@@ -53,7 +53,7 @@ public class AdminService {
                 }
             }
 
-            doctor.setApproved(status);
+            doctor.setApproved(true);
             userRepo.save(doctor);
 
             return ResponseEntity.ok(new SuccessResponse("Approval Status updated successfully"));
@@ -251,11 +251,15 @@ public class AdminService {
 
     public ResponseEntity<?> getAllDataRemovalRequests() throws InternalServerErrorException {
         try {
-            List<RemovalRequestResponse> response = new ArrayList<>();
+            List<RemovalRequestResponse> responseRequests = new ArrayList<>();
             for (DataRemovalRequest request : dataRemovalRequestRepo.findAll()) {
-                response.add(new RemovalRequestResponse().castToResponse(request));
+                responseRequests.add(new RemovalRequestResponse().castToResponse(request));
             }
-            response.sort(Comparator.comparing(RemovalRequestResponse::getCreatedAt).reversed());
+            responseRequests.sort(Comparator.comparing(RemovalRequestResponse::getCreatedAt).reversed());
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalRequest", responseRequests.size());
+            response.put("pendingRequest", dataRemovalRequestRepo.countAllByAcceptedIsFalseAndRejectedIsFalse());
+            response.put("request", responseRequests);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
