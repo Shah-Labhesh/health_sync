@@ -31,7 +31,7 @@ public class Qualifications {
     private byte[] certificate;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
 

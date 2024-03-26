@@ -26,7 +26,7 @@ public class SlotController {
 
     @Operation(summary = "Create a slot", description = "UserRole.DOCTOR", tags = {"Slot"})
     @PostMapping()
-    public ResponseEntity<?> createSlot(@RequestBody @Valid AddSlotDto slot) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> createSlot(@RequestBody @Valid AddSlotDto slot) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         return slotService.createSlot(slot);
     }
 

@@ -3,6 +3,9 @@ package com.fyp.health_sync.repository;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +41,5 @@ public interface UserRepo extends JpaRepository<Users, UUID> {
 
     Integer countAllByApprovedFalseAndRole(UserRole userRole);
 
+//    Slice<Users> findAllByRole(UserRole userRole, Pageable p);
 }

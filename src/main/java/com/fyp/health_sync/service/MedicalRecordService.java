@@ -471,4 +471,37 @@ public class MedicalRecordService {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
+
+
+    // revoke permission by user
+    public ResponseEntity<?> revokePermission(UUID requestId)
+            throws BadRequestException, ForbiddenException, InternalServerErrorException {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            Users user = userRepo.findByEmail(email);
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+            if (user.getRole() != UserRole.USER) {
+                throw new ForbiddenException("You are not authorized to revoke permission");
+            }
+            Optional<ShareMedicalRecords> records = shareRecordRepo.findById(requestId);
+            if (records.isEmpty()) {
+                throw new BadRequestException("Request not found");
+            }
+            if (!records.get().getUser().getId().equals(user.getId())) {
+                throw new ForbiddenException("You are not authorized to revoke this permission");
+            }
+            records.get().setExpired(true);
+            shareRecordRepo.save(records.get());
+            return ResponseEntity.ok().body(new SuccessResponse("Permission revoked successfully"));
+        } catch (BadRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
 }

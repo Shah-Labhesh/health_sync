@@ -1,9 +1,7 @@
 package com.fyp.health_sync.utils;
 
 
-import com.fyp.health_sync.entity.Appointments;
 import com.fyp.health_sync.entity.RatingReviews;
-import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.RatingType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

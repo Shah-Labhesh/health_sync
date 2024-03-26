@@ -67,12 +67,12 @@ public class UserService {
     }
 
     public ResponseEntity<?> uploadAddress(UUID id, UploadAddressDto address)
-            throws BadRequestException, InternalServerErrorException {
+            throws BadRequestException, InternalServerErrorException, ForbiddenException {
         try {
             Users doctor = userRepo.findById(id).orElseThrow(() -> new BadRequestException("Doctor not found"));
 
             if (doctor.getRole() != UserRole.DOCTOR) {
-                throw new BadRequestException("Doctor not found");
+                throw new ForbiddenException("You are not authorized to upload address");
             }
             if (doctor.getAddress() != null) {
                 throw new BadRequestException("Address already uploaded");
@@ -87,17 +87,19 @@ public class UserService {
             return ResponseEntity.created(null).body(new SuccessResponse("Address uploaded successfully"));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> uploadDetails(UUID doctorId, AddDoctorDetailsDto details)
-            throws BadRequestException, InternalServerErrorException {
+            throws BadRequestException, InternalServerErrorException, ForbiddenException {
         try {
             Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
             if (doctor.getRole() != UserRole.DOCTOR) {
-                throw new BadRequestException("Doctor not found");
+                throw new ForbiddenException("You are not authorized to upload details");
             }
             if (doctor.getSpeciality() != null) {
                 throw new BadRequestException("Details already uploaded");
@@ -113,24 +115,29 @@ public class UserService {
             return ResponseEntity.created(null).body(new SuccessResponse("Details uploaded successfully"));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        } catch (Exception e) {
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
+        }
+        catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
 
     public ResponseEntity<?> saveKhalti(AddMoreDetailsDto details, UUID doctorId)
-            throws BadRequestException, InternalServerErrorException {
+            throws BadRequestException, InternalServerErrorException, ForbiddenException {
         try {
             Users doctor = userRepo.findById(doctorId).orElseThrow(() -> new BadRequestException("Doctor not found"));
             if (doctor.getRole() != UserRole.DOCTOR) {
-                throw new BadRequestException("You are not authorized to add qualification");
+                throw new ForbiddenException("You are not authorized to add qualification");
             }
             doctor.setKhaltiId(details.getKhaltiId());
             userRepo.save(doctor);
             return ResponseEntity.created(null).body(new SuccessResponse("Details added successfully"));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
-        } catch (Exception e) {
+        } catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
+        }  catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }

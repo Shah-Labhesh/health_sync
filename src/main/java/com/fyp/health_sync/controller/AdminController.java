@@ -32,6 +32,13 @@ public class AdminController {
     private final RatingService ratingService;
     private final PaymentService paymentService;
 
+//    @Operation(summary = "Get all Users", description = "UserRole.ADMIN", tags = {"Admin"})
+//    @GetMapping("/users")
+//    public ResponseEntity<?> getAllUsers(@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
+//                                         @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize) throws InternalServerErrorException {
+//        return adminService.getAllUsers(pageNumber, pageSize);
+//    }
+
     @Operation(summary = "Update approved status of doctor", description = "UserRole.ADMIN", tags = {"Admin"})
     @PutMapping("/approve-status/{doctorId}/{status}")
     public ResponseEntity<?> updateApprovedStatus(@PathVariable UUID doctorId, @PathVariable Boolean status, @RequestParam(required = false) String message) throws BadRequestException, InternalServerErrorException {

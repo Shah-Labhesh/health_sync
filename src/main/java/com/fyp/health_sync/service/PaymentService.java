@@ -3,7 +3,6 @@ package com.fyp.health_sync.service;
 import com.fyp.health_sync.entity.Payment;
 import com.fyp.health_sync.entity.Users;
 import com.fyp.health_sync.enums.UserRole;
-import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.ForbiddenException;
 import com.fyp.health_sync.exception.InternalServerErrorException;

@@ -18,6 +18,10 @@ import com.fyp.health_sync.utils.SuccessResponse;
 import com.fyp.health_sync.utils.UserResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +37,20 @@ public class AdminService {
     private final MedicalRecordRepo medicalRecordRepo;
     private final PrescriptionRepo prescriptionRepo;
     private final MailService mailService;
+
+//    public ResponseEntity<?> getAllUsers(Integer pageNumber, Integer pageSize) throws InternalServerErrorException {
+//        try {
+//            Pageable p = PageRequest.of(pageNumber, pageSize);
+//            Slice<Users> users = userRepo.findAllByRole(UserRole.USER, p);
+//            List<UserResponse> response = new ArrayList<>();
+//            for (Users user : users) {
+//                response.add(new UserResponse().castToResponse(user));
+//            }
+//            return ResponseEntity.ok(users);
+//        } catch (Exception e) {
+//            throw new InternalServerErrorException(e.getMessage());
+//        }
+//    }
 
     public ResponseEntity<?> updateApprovedStatus(UUID id, Boolean status, String message)
             throws BadRequestException, InternalServerErrorException {

@@ -32,7 +32,7 @@ public class SlotService {
     private final SlotRepo slotRepo;
     private final UserRepo userRepo;
 
-    public ResponseEntity<?> createSlot(AddSlotDto slot) throws BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> createSlot(AddSlotDto slot) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         try {
             String currentPrincipalName = SecurityContextHolder.getContext().getAuthentication().getName();
             Users doctor = userRepo.findByEmail(currentPrincipalName);
@@ -40,8 +40,14 @@ public class SlotService {
                 throw new BadRequestException("Doctor not found");
             }
             if (doctor.getRole() != UserRole.DOCTOR) {
-                throw new BadRequestException("You are not authorized to create slots");
+                throw new ForbiddenException("You are not authorized to create slots");
             }
+
+            if (doctor.getApproved()){
+                throw new BadRequestException("You are not approved yet");
+            }
+
+
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
             LocalDateTime dateTime = LocalDateTime.parse(slot.getSlotDateTime(), formatter);
             Integer existingSlots = slotRepo.findOverlappingSlots(doctor.getId(), dateTime, dateTime.plusMinutes(30));
@@ -66,6 +72,8 @@ public class SlotService {
             return ResponseEntity.created(null).body(new SlotsResponse().castToResponse(slots));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
+        }  catch (ForbiddenException e) {
+            throw new ForbiddenException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }

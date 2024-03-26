@@ -91,6 +91,13 @@ public class MedicalRecordController {
         return medicalRecordService.cancelRequest(requestId);
     }
 
+    @Operation(summary = "revoke permission for viewing medical record by user", description = "UserRole.USER", tags = {"Medical Record"})
+    @PutMapping("/revoke-permission/{requestId}")
+    public ResponseEntity<?> revokePermissionForViewingMedicalRecord(@PathVariable UUID requestId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+        return medicalRecordService.revokePermission(requestId);
+    }
+
+
 
 
 }

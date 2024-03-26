@@ -41,20 +41,20 @@ public class UserController {
 
     @Operation(summary = "Upload address of doctor while registration", tags = {"User"} , description = "UserRole.DOCTOR")
     @PostMapping("/upload-address/{userId}")
-    public ResponseEntity<?> uploadAddress(@PathVariable UUID userId, @RequestBody @Valid UploadAddressDto address) throws BadRequestException, JsonProcessingException, InternalServerErrorException {
+    public ResponseEntity<?> uploadAddress(@PathVariable UUID userId, @RequestBody @Valid UploadAddressDto address) throws BadRequestException, JsonProcessingException, InternalServerErrorException, ForbiddenException {
         return userService.uploadAddress(userId, address);
     }
 
 
     @Operation(summary = "Upload details of doctor while registration", tags = {"User"} , description = "UserRole.DOCTOR")
     @PostMapping("/upload-details/{userId}")
-    public ResponseEntity<?> uploadDetails(@PathVariable UUID userId, @RequestBody @Valid @ModelAttribute AddDoctorDetailsDto details) throws BadRequestException, IOException, InternalServerErrorException {
+    public ResponseEntity<?> uploadDetails(@PathVariable UUID userId, @RequestBody @Valid @ModelAttribute AddDoctorDetailsDto details) throws BadRequestException, IOException, InternalServerErrorException, ForbiddenException {
         return userService.uploadDetails(userId, details);
     }
 
     @Operation(summary = "Add khalti number of doctor", tags = {"User"} , description = "UserRole.DOCTOR")
     @PostMapping("/khaltiId/{doctorId}")
-    public ResponseEntity<?> addQualification(@PathVariable UUID doctorId, @RequestBody @Valid AddMoreDetailsDto details) throws BadRequestException, IOException, InternalServerErrorException {
+    public ResponseEntity<?> addQualification(@PathVariable UUID doctorId, @RequestBody @Valid AddMoreDetailsDto details) throws BadRequestException, IOException, InternalServerErrorException, ForbiddenException {
         return userService.saveKhalti(details, doctorId);
     }
 
