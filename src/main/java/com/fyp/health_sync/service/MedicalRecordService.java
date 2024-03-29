@@ -159,7 +159,7 @@ public class MedicalRecordService {
 
             Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
 
-            ShareMedicalRecords records = shareRecordRepo.findByDoctorAndUserAndAccepted(doctor, user, true);
+            ShareMedicalRecords records = shareRecordRepo.findByDoctorAndUserAndAcceptedAndExpired(doctor, user, true, false);
             if (records == null) {
 
                 throw new BadRequestException("You don't have permission to view records");
@@ -315,12 +315,13 @@ public class MedicalRecordService {
             List<ShareMedicalRecords> records = shareRecordRepo.findByDoctorAndUser(doctor, user);
             if (records != null) {
                 for (ShareMedicalRecords record : records) {
-                    if (record.isAccepted()) {
+                    if (record.isAccepted() && !record.isExpired()) {
                         throw new BadRequestException("You already have permission to view this record");
                     }
-                    if (!record.isRejected()) {
+                    if (!record.isRejected() && !record.isExpired()) {
                         throw new BadRequestException("Your Have already requested for permission to view this record");
                     }
+
                 }
             }
 

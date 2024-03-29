@@ -18,8 +18,8 @@ public interface ShareRecordRepo extends JpaRepository<ShareMedicalRecords, UUID
 
 //    Optional<ShareMedicalRecords> findByMedicalRecordsAndDoctor(MedicalRecords medicalRecords, Users doctor);
 
-    @Query("SELECT s FROM ShareMedicalRecords s WHERE s.doctor = ?1 AND s.user = ?2 AND s.isAccepted = ?3")
-    ShareMedicalRecords findByDoctorAndUserAndAccepted(Users doctor, Users user, boolean accepted);
+    @Query("SELECT s FROM ShareMedicalRecords s WHERE s.doctor = ?1 AND s.user = ?2 AND s.isAccepted = ?3 AND s.isExpired = ?4")
+    ShareMedicalRecords findByDoctorAndUserAndAcceptedAndExpired(Users doctor, Users user, boolean accepted, boolean expired);
 
     List<ShareMedicalRecords> findByDoctorAndUser(Users doctor, Users user);
 }

@@ -45,6 +45,7 @@ public class UpdateDoctorDto {
     private Integer fee;
 
 
+
     private MultipartFile image;
 
     @Pattern(regexp = "^(\\+)?(977)?([0-9]{10})$", message = "Invalid Khalti Id")

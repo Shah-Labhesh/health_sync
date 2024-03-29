@@ -41,7 +41,8 @@ public class PrescriptionService {
     private final PushNotificationService pushNotificationService;
     private final FirebaseTokenRepo firebaseTokenRepo;
 
-    public ResponseEntity<?> savePrescription(UploadPrescriptionDto prescription) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> savePrescription(UploadPrescriptionDto prescription)
+            throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users doctor = userRepo.findByEmail(email);
@@ -51,11 +52,13 @@ public class PrescriptionService {
             if (doctor.getRole() != UserRole.DOCTOR) {
                 throw new ForbiddenException("You are not authorized to upload prescription");
             }
-            Users user = userRepo.findById(prescription.getUserId()).orElseThrow(() -> new BadRequestException("User not found"));
+            Users user = userRepo.findById(prescription.getUserId())
+                    .orElseThrow(() -> new BadRequestException("User not found"));
             if (user.getRole() != UserRole.USER) {
                 throw new BadRequestException("User is not a patient");
             }
-            if (prescription.getRecordType().equals(RecordType.IMAGE.name()) || prescription.getRecordType().equals(RecordType.PDF.name())) {
+            if (prescription.getRecordType().equals(RecordType.IMAGE.name())
+                    || prescription.getRecordType().equals(RecordType.PDF.name())) {
                 if (prescription.getPrescription() == null) {
                     throw new BadRequestException("Prescription must not be empty");
                 }
@@ -66,16 +69,21 @@ public class PrescriptionService {
             }
             Prescriptions prescriptions = prescriptionRepo.save(Prescriptions.builder()
                     .recordType(prescription.getRecordType())
-                    .prescription(prescription.getPrescription() != null ? ImageUtils.compress(prescription.getPrescription().getBytes()) : null)
+                    .prescription(prescription.getPrescription() != null
+                            ? ImageUtils.compress(prescription.getPrescription().getBytes())
+                            : null)
                     .prescriptionText(prescription.getPrescriptionText())
                     .createdAt(LocalDateTime.now())
                     .doctor(doctor)
                     .user(user)
-                    .build()
-            );
-            notificationService.sendNotification(prescriptions.getId(), "You have a new prescription from Dr. " + prescriptions.getDoctor().getName(), NotificationType.PRESCRIPTION, prescriptions.getUser().getId());
+                    .build());
+            notificationService.sendNotification(prescriptions.getId(),
+                    "You have a new prescription from Dr. " + prescriptions.getDoctor().getName(),
+                    NotificationType.PRESCRIPTION, prescriptions.getUser().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(user)) {
-                pushNotificationService.sendNotification("New Prescription", "You have a new prescription from Dr. " + prescriptions.getDoctor().getName(), token.getToken());
+                pushNotificationService.sendNotification("New Prescription",
+                        "You have a new prescription from Dr. " + prescriptions.getDoctor().getName(),
+                        token.getToken());
             }
             return ResponseEntity.created(null).body(new PrescriptionResponse().castToResponse(prescriptions));
         } catch (BadRequestException e) {
@@ -115,7 +123,8 @@ public class PrescriptionService {
     }
 
     // request for prescription of user by doctor
-    public ResponseEntity<?> requestPrescription(UUID userId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> requestPrescription(UUID userId)
+            throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users doctor = userRepo.findByEmail(email);
@@ -126,29 +135,33 @@ public class PrescriptionService {
                 throw new ForbiddenException("You are not authorized to request prescription");
             }
             Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
-            ViewPrescriptionPermission permission = viewPPRepo.findByDoctorAndUser(doctor, user);
-            if (permission != null) {
-                if (permission.isAccepted()) {
-                    throw new BadRequestException("You already have permission to view prescription");
+            List<ViewPrescriptionPermission> permissions = viewPPRepo.findByDoctorAndUser(doctor, user);
+            if (permissions != null) {
+                for (ViewPrescriptionPermission viewPrescriptionPermission : permissions) {
+                    if (!viewPrescriptionPermission.isExpired() && !viewPrescriptionPermission.isRejected()) {
+                        throw new BadRequestException("Request already sent");
+                    }
+                    if (viewPrescriptionPermission.isAccepted() && !viewPrescriptionPermission.isExpired()) {
+
+                        throw new BadRequestException("Request already accepted");
+                    }
                 }
-                if (permission.isRejected()) {
-                    permission.setRejected(false);
-                    viewPPRepo.save(permission);
-                }
-                throw new BadRequestException("Request already sent");
-            } else {
-                permission = ViewPrescriptionPermission.builder()
-                        .isAccepted(false)
-                        .isRejected(false)
-                        .isExpired(false)
-                        .doctor(doctor)
-                        .user(user)
-                        .build();
             }
-            viewPPRepo.save(permission);
-            notificationService.sendNotification(permission.getId(), "Dr. " + doctor.getName() + " has requested to view your prescription", NotificationType.PRESCRIPTION_PERMISSION, permission.getUser().getId());
+            ViewPrescriptionPermission newPermission = ViewPrescriptionPermission.builder()
+                    .isAccepted(false)
+                    .isRejected(false)
+                    .isExpired(false)
+                    .doctor(doctor)
+                    .user(user)
+                    .build();
+
+            viewPPRepo.save(newPermission);
+            notificationService.sendNotification(newPermission.getId(),
+                    "Dr. " + doctor.getName() + " has requested to view your prescription",
+                    NotificationType.PRESCRIPTION_PERMISSION, newPermission.getUser().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(user)) {
-                pushNotificationService.sendNotification("Prescription Request", "Dr. " + doctor.getName() + " has requested to view your prescription", token.getToken());
+                pushNotificationService.sendNotification("Prescription Request",
+                        "Dr. " + doctor.getName() + " has requested to view your prescription", token.getToken());
             }
 
             return ResponseEntity.ok(new SuccessResponse("View Prescription Requested successfully"));
@@ -161,8 +174,8 @@ public class PrescriptionService {
         }
     }
 
-
-    public ResponseEntity<?> getPrescriptionsOfUser(UUID userId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> getPrescriptionsOfUser(UUID userId)
+            throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users doctor = userRepo.findByEmail(email);
@@ -173,19 +186,18 @@ public class PrescriptionService {
                 throw new ForbiddenException("You are not authorized to view prescriptions");
             }
             Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
-            ViewPrescriptionPermission permission = viewPPRepo.findByDoctorAndUser(doctor, user);
+            ViewPrescriptionPermission permission = viewPPRepo.findByDoctorAndUserAndAcceptedAndExpired(doctor,
+                    user, true, false);
             if (permission == null) {
                 throw new BadRequestException("You don't have permission to view prescription");
             }
-            if (permission.isRejected()) {
+            if (permission.isRejected() && !permission.isExpired()) {
                 throw new BadRequestException("Permission to view prescription is rejected");
             }
-            if (!permission.isAccepted()) {
+            if (!permission.isAccepted() && !permission.isExpired()) {
                 throw new BadRequestException("Permission to view prescription is not accepted yet");
             }
-            if (permission.isExpired()) {
-                throw new BadRequestException("Permission to view prescription is expired");
-            }
+
             List<PrescriptionResponse> prescriptionResponses = new ArrayList<>();
             for (Prescriptions prescription : prescriptionRepo.findAllByUser(user)) {
                 prescriptionResponses.add(new PrescriptionResponse().castToResponse(prescription));
@@ -201,7 +213,8 @@ public class PrescriptionService {
     }
 
     // accept or reject request for prescription of user
-    public ResponseEntity<?> acceptOrRejectRequest(UUID permissionId, boolean isAccepted) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> acceptOrRejectRequest(UUID permissionId, boolean isAccepted)
+            throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -211,7 +224,8 @@ public class PrescriptionService {
             if (user.getRole() != UserRole.USER) {
                 throw new ForbiddenException("You are not authorized to accept or reject request");
             }
-            ViewPrescriptionPermission permission = viewPPRepo.findById(permissionId).orElseThrow(() -> new BadRequestException("Permission not found"));
+            ViewPrescriptionPermission permission = viewPPRepo.findById(permissionId)
+                    .orElseThrow(() -> new BadRequestException("Permission not found"));
             if (!permission.getUser().getId().equals(user.getId())) {
                 throw new ForbiddenException("You are not authorized to accept or reject this request");
             }
@@ -221,26 +235,33 @@ public class PrescriptionService {
             if (permission.isExpired()) {
                 throw new BadRequestException("Request is expired");
             }
-            if (isAccepted){
+            if (isAccepted) {
                 permission.setRejected(false);
                 permission.setAccepted(true);
-            }else{
+            } else {
                 permission.setRejected(true);
                 permission.setAccepted(false);
             }
             viewPPRepo.save(permission);
             if (isAccepted) {
-                notificationService.sendNotification(permission.getId(), user.getName() + " has accepted your request to view prescription", NotificationType.PRESCRIPTION_PERMISSION, permission.getDoctor().getId());
+                notificationService.sendNotification(permission.getId(),
+                        user.getName() + " has accepted your request to view prescription",
+                        NotificationType.PRESCRIPTION_PERMISSION, permission.getDoctor().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(permission.getUser())) {
-                    pushNotificationService.sendNotification("Prescription Request",  user.getName() + " has accepted your request to view prescription", token.getToken());
+                    pushNotificationService.sendNotification("Prescription Request",
+                            user.getName() + " has accepted your request to view prescription", token.getToken());
                 }
             } else {
-                notificationService.sendNotification(permission.getId(), user.getName() + " has rejected your request to view prescription", NotificationType.PRESCRIPTION_PERMISSION, permission.getDoctor().getId());
+                notificationService.sendNotification(permission.getId(),
+                        user.getName() + " has rejected your request to view prescription",
+                        NotificationType.PRESCRIPTION_PERMISSION, permission.getDoctor().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(permission.getUser())) {
-                    pushNotificationService.sendNotification("Prescription Request",  user.getName() + " has rejected your request to view prescription", token.getToken());
+                    pushNotificationService.sendNotification("Prescription Request",
+                            user.getName() + " has rejected your request to view prescription", token.getToken());
                 }
             }
-            return ResponseEntity.created (null).body(new SuccessResponse("Request " + (isAccepted ? "accepted" : "rejected") + " successfully"));
+            return ResponseEntity.created(null)
+                    .body(new SuccessResponse("Request " + (isAccepted ? "accepted" : "rejected") + " successfully"));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (ForbiddenException e) {
@@ -252,7 +273,8 @@ public class PrescriptionService {
     }
 
     // get all request permission
-    public ResponseEntity<?> getAllRequestPermission() throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> getAllRequestPermission()
+            throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -261,21 +283,20 @@ public class PrescriptionService {
             }
             if (user.getRole() == UserRole.DOCTOR) {
                 List<PrescriptionPermissionResponse> permissions = new ArrayList<>();
-                for (ViewPrescriptionPermission permission:viewPPRepo.findAllByDoctor(user)
-                     ) {
+                for (ViewPrescriptionPermission permission : viewPPRepo.findAllByDoctor(user)) {
                     permissions.add(new PrescriptionPermissionResponse().castToResponse(permission));
-                };
+                }
+                ;
                 return ResponseEntity.ok(permissions);
-            } else
-            if (user.getRole() == UserRole.USER) {
+            } else if (user.getRole() == UserRole.USER) {
 
                 List<PrescriptionPermissionResponse> permissions = new ArrayList<>();
-                for (ViewPrescriptionPermission permission:viewPPRepo.findAllByUser(user)
-                     ) {
+                for (ViewPrescriptionPermission permission : viewPPRepo.findAllByUser(user)) {
                     permissions.add(new PrescriptionPermissionResponse().castToResponse(permission));
-                };
+                }
+                ;
                 return ResponseEntity.ok(permissions);
-            }else{
+            } else {
                 throw new ForbiddenException("You are not authorized to view request permission");
             }
 
@@ -288,7 +309,8 @@ public class PrescriptionService {
         }
     }
 
-    public ResponseEntity<?> revokePermission(UUID permissionId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> revokePermission(UUID permissionId)
+            throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -298,7 +320,8 @@ public class PrescriptionService {
             if (user.getRole() != UserRole.USER) {
                 throw new ForbiddenException("You are not authorized to revoke permission");
             }
-            ViewPrescriptionPermission permission = viewPPRepo.findById(permissionId).orElseThrow(() -> new BadRequestException("Permission not found"));
+            ViewPrescriptionPermission permission = viewPPRepo.findById(permissionId)
+                    .orElseThrow(() -> new BadRequestException("Permission not found"));
             if (!permission.getUser().getId().equals(user.getId())) {
                 throw new ForbiddenException("You are not authorized to revoke this permission");
             }
@@ -318,7 +341,8 @@ public class PrescriptionService {
     }
 
     @Transactional
-    public ResponseEntity<?> cancelPermissionRequest(UUID permissionId) throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> cancelPermissionRequest(UUID permissionId)
+            throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users doctor = userRepo.findByEmail(email);
@@ -328,7 +352,8 @@ public class PrescriptionService {
             if (doctor.getRole() != UserRole.DOCTOR) {
                 throw new ForbiddenException("You are not authorized to cancel permission request");
             }
-            ViewPrescriptionPermission permission = viewPPRepo.findById(permissionId).orElseThrow(() -> new BadRequestException("Permission not found"));
+            ViewPrescriptionPermission permission = viewPPRepo.findById(permissionId)
+                    .orElseThrow(() -> new BadRequestException("Permission not found"));
             if (!permission.getDoctor().getId().equals(doctor.getId())) {
                 throw new ForbiddenException("You are not authorized to cancel this permission request");
             }

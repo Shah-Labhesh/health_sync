@@ -43,7 +43,7 @@ public class SlotService {
                 throw new ForbiddenException("You are not authorized to create slots");
             }
 
-            if (doctor.getApproved()){
+            if (!doctor.getApproved()){
                 throw new BadRequestException("You are not approved yet");
             }
 

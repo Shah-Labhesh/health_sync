@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,20 +32,22 @@ public class WebSocket {
     }
 
     @MessageMapping("/message")
-    public void processMessage(@Payload Map<String, String> payload) throws BadRequestException, InternalServerErrorException {
+    public void processMessage(@Payload Map<String, String> payload) throws BadRequestException, InternalServerErrorException, ForbiddenException {
         UUID roomId = UUID.fromString(payload.get("roomId"));
         String message = payload.get("message");
         String token = payload.get("token");
         MessageResponse message1 = messageService.createMessage(roomId, message,token);
-        messagingTemplate.convertAndSend("/topic/"+roomId, message1);
+        List<MessageResponse> messages = messageService.getRoomMessages(roomId,token);
+        messagingTemplate.convertAndSend("/topic/"+roomId, messages);
     }
 
     @MessageMapping("/get-messages")
-    @SendTo("/topic/get-messages")
     public ResponseEntity<?> getMessages(@Payload Map<String, String> payload) throws BadRequestException, ForbiddenException {
         UUID roomId = UUID.fromString(payload.get("roomId"));
         String token = payload.get("token");
-        return messageService.getRoomMessages(roomId,token);
+        List<MessageResponse> messages = messageService.getRoomMessages(roomId,token);
+        messagingTemplate.convertAndSend ("/topic/"+roomId, messages);
+        return ResponseEntity.ok(messages);
     }
 
     @GetMapping("/delete-room")
