@@ -36,7 +36,7 @@ public class WebSocket {
         UUID roomId = UUID.fromString(payload.get("roomId"));
         String message = payload.get("message");
         String token = payload.get("token");
-        MessageResponse message1 = messageService.createMessage(roomId, message,token);
+        messageService.createMessage(roomId, message,token);
         List<MessageResponse> messages = messageService.getRoomMessages(roomId,token);
         messagingTemplate.convertAndSend("/topic/"+roomId, messages);
     }

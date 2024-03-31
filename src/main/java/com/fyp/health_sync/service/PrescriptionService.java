@@ -132,18 +132,20 @@ public class PrescriptionService {
                 throw new BadRequestException("Doctor not found");
             }
             if (doctor.getRole() != UserRole.DOCTOR) {
-                throw new ForbiddenException("You are not authorized to request prescription");
+                throw new ForbiddenException("You are not authorized to request for viewing prescription");
             }
             Users user = userRepo.findById(userId).orElseThrow(() -> new BadRequestException("User not found"));
+            if (user.getRole() != UserRole.USER) {
+                throw new ForbiddenException("You are not authorized to request for viewing record");
+            }
             List<ViewPrescriptionPermission> permissions = viewPPRepo.findByDoctorAndUser(doctor, user);
             if (permissions != null) {
                 for (ViewPrescriptionPermission viewPrescriptionPermission : permissions) {
-                    if (!viewPrescriptionPermission.isExpired() && !viewPrescriptionPermission.isRejected()) {
-                        throw new BadRequestException("Request already sent");
-                    }
                     if (viewPrescriptionPermission.isAccepted() && !viewPrescriptionPermission.isExpired()) {
-
-                        throw new BadRequestException("Request already accepted");
+                        throw new BadRequestException("You already have permission to view prescription");
+                    }
+                    if (!viewPrescriptionPermission.isExpired() && !viewPrescriptionPermission.isRejected()) {
+                        throw new BadRequestException("Your Have already requested for permission to view prescription");
                     }
                 }
             }
@@ -158,13 +160,13 @@ public class PrescriptionService {
             viewPPRepo.save(newPermission);
             notificationService.sendNotification(newPermission.getId(),
                     "Dr. " + doctor.getName() + " has requested to view your prescription",
-                    NotificationType.PRESCRIPTION_PERMISSION, newPermission.getUser().getId());
+                    NotificationType.PRESCRIPTION, newPermission.getUser().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(user)) {
                 pushNotificationService.sendNotification("Prescription Request",
                         "Dr. " + doctor.getName() + " has requested to view your prescription", token.getToken());
             }
 
-            return ResponseEntity.ok(new SuccessResponse("View Prescription Requested successfully"));
+            return ResponseEntity.created(null).body(new SuccessResponse("View Prescription Requested successfully"));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (ForbiddenException e) {
@@ -191,18 +193,18 @@ public class PrescriptionService {
             if (permission == null) {
                 throw new BadRequestException("You don't have permission to view prescription");
             }
-            if (permission.isRejected() && !permission.isExpired()) {
-                throw new BadRequestException("Permission to view prescription is rejected");
-            }
-            if (!permission.isAccepted() && !permission.isExpired()) {
-                throw new BadRequestException("Permission to view prescription is not accepted yet");
+            
+            if (permission.isAccepted() && !permission.isExpired()) {
+                List<PrescriptionResponse> prescriptionResponses = new ArrayList<>();
+                for (Prescriptions prescription : prescriptionRepo.findByUser(user)) {
+                    prescriptionResponses.add(new PrescriptionResponse().castToResponse(prescription));
+                }
+                return ResponseEntity.ok(prescriptionResponses);
+            } else {
+                throw new BadRequestException("You don't have permission to view prescription");
             }
 
-            List<PrescriptionResponse> prescriptionResponses = new ArrayList<>();
-            for (Prescriptions prescription : prescriptionRepo.findAllByUser(user)) {
-                prescriptionResponses.add(new PrescriptionResponse().castToResponse(prescription));
-            }
-            return ResponseEntity.ok(prescriptionResponses);
+            
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (ForbiddenException e) {

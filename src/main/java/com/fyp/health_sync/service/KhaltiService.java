@@ -84,6 +84,10 @@ public class KhaltiService {
             if (appointment.getUser().getId() != user.getId()) {
                 throw new ForbiddenException("You are not authorized to make payment for this appointment");
             }
+            Payment payment = paymentRepo.findByAppointment(appointment);
+            if (payment != null){
+                throw new BadRequestException("Payment already done for this appointment");
+            }
 
             khaltiRequest.setPublic_key(TEST_PUBLIC_KEY);
             khaltiRequest.setAmount(1000);
@@ -97,10 +101,7 @@ public class KhaltiService {
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
 
             mapResponse.put("khalti_token", jsonNode.get("token").asText());
-            Payment payment = paymentRepo.findByAppointment(appointment);
-            if (payment != null){
-                throw new BadRequestException("Payment already done for this appointment");
-            }
+            
 
             return ResponseEntity.created(null).body(mapResponse);
         } 

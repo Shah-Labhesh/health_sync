@@ -165,7 +165,7 @@ public class MedicalRecordService {
                 throw new BadRequestException("You don't have permission to view records");
             }
 
-            if (records.isAccepted()) {
+            if (records.isAccepted() && !records.isExpired()) {
                 List<MedicalRecords> medicalRecords = medicalRecordRepo.findAllByUser(user);
                 List<RecordResponse> recordResponses = new ArrayList<>();
                 for (MedicalRecords record1 : medicalRecords) {
@@ -316,12 +316,11 @@ public class MedicalRecordService {
             if (records != null) {
                 for (ShareMedicalRecords record : records) {
                     if (record.isAccepted() && !record.isExpired()) {
-                        throw new BadRequestException("You already have permission to view this record");
+                        throw new BadRequestException("You already have permission to view record");
                     }
                     if (!record.isRejected() && !record.isExpired()) {
-                        throw new BadRequestException("Your Have already requested for permission to view this record");
+                        throw new BadRequestException("Your Have already requested for permission to view record");
                     }
-
                 }
             }
 
@@ -342,7 +341,7 @@ public class MedicalRecordService {
                         "Dr. " + doctor.getName() + " requested permission to view your medical record",
                         token.getToken());
             }
-            return ResponseEntity.created(null).body(new SuccessResponse("Record shared successfully"));
+            return ResponseEntity.created(null).body(new SuccessResponse("View Record requested successfully"));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
         } catch (ForbiddenException e) {

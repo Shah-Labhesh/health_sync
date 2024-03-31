@@ -21,6 +21,7 @@ public class PrescriptionPermissionResponse {
 
     private boolean isAccepted;
     private boolean isRejected;
+    private boolean isExpired;
 
     public PrescriptionPermissionResponse castToResponse(ViewPrescriptionPermission permission){
         return PrescriptionPermissionResponse.builder()
@@ -29,6 +30,7 @@ public class PrescriptionPermissionResponse {
                 .user(permission.getUser() != null ? new UserResponse().castToResponse(permission.getUser()) : null)
                 .isAccepted(permission.isAccepted())
                 .isRejected(permission.isRejected())
+                .isExpired(permission.isExpired())
                 .build();
     }
 }
