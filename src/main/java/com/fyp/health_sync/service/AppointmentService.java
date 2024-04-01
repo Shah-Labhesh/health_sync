@@ -28,6 +28,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -45,6 +47,7 @@ public class AppointmentService {
     private final NotificationService notificationService;
     private final PushNotificationService pushNotificationService;
 
+    ZoneId zoneId = ZoneId.of("Asia/Kathmandu"); // Kathmandu is GMT+5:45
 
     private String getAppointmentId() {
         // generate 5-6 digit random number
@@ -288,8 +291,6 @@ public class AppointmentService {
             }
 
             if (appointments.getPaymentStatus() == PaymentStatus.SUCCESS) {
-
-
                 throw new BadRequestException("You can't cancel this appointment as payment is completed");
             }
 
@@ -320,7 +321,7 @@ public class AppointmentService {
     // schedule appointment auto expire
     @Scheduled(fixedRate = 60000)
     public void scheduleAppointmentExpire() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
-        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_EndTimeIsBefore(LocalDateTime.now());
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_EndTimeIsBefore(LocalDateTime.now().atZone(zoneId).toLocalDateTime());
         for (Appointments appointment : appointments) {
             appointment.setIsExpired(true);
             appointmentRepo.save(appointment);
@@ -334,7 +335,7 @@ public class AppointmentService {
     // reminder notification for appointment
     @Scheduled(fixedRate = 60000)
     public void scheduleAppointmentReminder() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
-        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndReminderTimeIsBefore(LocalDateTime.now());
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndReminderTimeIsBefore(LocalDateTime.now().atZone(zoneId).toLocalDateTime());
         for (Appointments appointment : appointments) {
             appointment.setReminderTime(null);
             appointmentRepo.save(appointment);
@@ -353,7 +354,7 @@ public class AppointmentService {
     @Scheduled(fixedRate = 60000)
     @Transactional
     public void scheduleAppointmentDelete() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
-        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime.now().minusHours(3));
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime.now().atZone(zoneId).toLocalDateTime().minusHours(3));
         for (Appointments appointment : appointments) {
             if (appointment.getCreatedAt().isEqual(appointment.getCreatedAt().plusMinutes(5))){
                 continue;
