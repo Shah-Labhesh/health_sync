@@ -350,6 +350,16 @@ public class AppointmentService {
         }
     }
 
+    @Scheduled(fixedRate = 60000)
+    public void printSystemTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        ZoneId zoneId = ZoneId.of("Asia/Kathmandu"); // Kathmandu is GMT+5:45
+        ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
+        LocalDateTime localDateTimeWithTimeZone = zonedDateTime.toLocalDateTime();
+
+        System.out.println("LocalDateTime with timezone: " + localDateTimeWithTimeZone);
+    }
+
     // delete appointment if slot is before 3 hours of current time and payment is pending
     @Scheduled(fixedRate = 60000)
     @Transactional

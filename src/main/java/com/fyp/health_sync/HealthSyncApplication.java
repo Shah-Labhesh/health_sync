@@ -5,6 +5,11 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +27,13 @@ public class HealthSyncApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(HealthSyncApplication.class, args);
+		System.out.println("Health Sync Application Started");
+		LocalDateTime localDateTime = LocalDateTime.now();
+        ZoneId zoneId = ZoneId.of("Asia/Kathmandu"); // Kathmandu is GMT+5:45
+        ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
+        LocalDateTime localDateTimeWithTimeZone = zonedDateTime.toLocalDateTime();
+
+        System.out.println("LocalDateTime with timezone: " + localDateTimeWithTimeZone);
 	}
 
 
