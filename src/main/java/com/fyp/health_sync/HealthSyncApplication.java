@@ -29,7 +29,7 @@ public class HealthSyncApplication {
 		SpringApplication.run(HealthSyncApplication.class, args);
 		System.out.println("Health Sync Application Started");
 		LocalDateTime localDateTime = LocalDateTime.now();
-        ZoneId zoneId = ZoneId.of("Asia/Kathmandu"); // Kathmandu is GMT+5:45
+		ZoneId zoneId = ZoneId.of("GMT+05:45"); // Kathmandu is GMT+5:45
         ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
         LocalDateTime localDateTimeWithTimeZone = zonedDateTime.toLocalDateTime();
 
