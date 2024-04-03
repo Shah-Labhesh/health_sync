@@ -355,6 +355,7 @@ public class AppointmentService {
         LocalDateTime localDateTime = LocalDateTime.now();
         ZoneId zoneId = ZoneId.of("GMT+05:45"); // Kathmandu is GMT+5:45
         ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
+        System.out.println("LocalDateTime: " + localDateTime);
         LocalDateTime localDateTimeWithTimeZone = zonedDateTime.toLocalDateTime();
 
         System.out.println("LocalDateTime with timezone: " + localDateTimeWithTimeZone);
