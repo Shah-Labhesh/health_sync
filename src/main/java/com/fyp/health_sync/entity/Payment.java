@@ -32,15 +32,15 @@ public class Payment {
     private String paymentType;
     private String transactionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")
     private Users user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
 
-    @OneToOne (fetch = FetchType.LAZY)
+    @OneToOne (fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "appointment", referencedColumnName = "id")
     private Appointments appointment;
 

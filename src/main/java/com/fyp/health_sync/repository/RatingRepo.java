@@ -24,11 +24,10 @@ public interface RatingRepo extends JpaRepository<RatingReviews, UUID> {
 
     RatingReviews findByUserAndDoctorAndRatingType(Users user, Users doctor, RatingType ratingType);
 
-    RatingReviews findByUserAndAppointmentAndRatingType(Users user, Appointments appointment, RatingType ratingType);
+    RatingReviews findByUserAndRatingType(Users user, RatingType ratingType);
 
     List<RatingReviews> findAllByDoctorAndRatingType(Users doctor, RatingType ratingType);
 
     List<RatingReviews> findAllByUserAndRatingType(Users user, RatingType ratingType1);
 
-    List<RatingReviews> findAllByAppointmentAndRatingType(Appointments appointment, RatingType ratingType1);
 }

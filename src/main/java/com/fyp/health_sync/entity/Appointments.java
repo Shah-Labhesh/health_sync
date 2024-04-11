@@ -29,15 +29,15 @@ public class Appointments {
 
     private String appointmentId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")
     private Users user;
     private String appointmentType;
-    @OneToOne (fetch = FetchType.EAGER)
+    @OneToOne (fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "slot", referencedColumnName = "id")
     private Slots slot;
     private String notes;

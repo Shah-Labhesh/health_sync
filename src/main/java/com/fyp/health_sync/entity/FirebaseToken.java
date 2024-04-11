@@ -25,7 +25,7 @@ public class FirebaseToken {
 
     private String token;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")
     private Users user;
 

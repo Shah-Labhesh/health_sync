@@ -31,7 +31,6 @@ public class RatingResponse {
 
     private UserResponse user;
 
-    private AppointmentResponse appointment;
 
     public RatingResponse castToResponse(RatingReviews ratingReviews){
         return RatingResponse.builder()
@@ -43,7 +42,6 @@ public class RatingResponse {
                 .updatedAt(ratingReviews.getUpdatedAt())
                 .doctor(ratingReviews.getDoctor() != null ? new DoctorResponse().castToResponse( ratingReviews.getDoctor() ) : null)
                 .user(ratingReviews.getUser() != null ? new UserResponse().castToResponse(ratingReviews.getUser() ): null)
-                .appointment(ratingReviews.getAppointment() != null ? new AppointmentResponse().castToResponse( ratingReviews.getAppointment() ): null)
                 .build();
     }
 }

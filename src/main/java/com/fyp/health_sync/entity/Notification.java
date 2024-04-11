@@ -30,7 +30,7 @@ public class Notification {
     private String body;
     private NotificationType type;
     private boolean isRead;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "receiver", referencedColumnName = "id")
     private Users receiver;
     private UUID targetId;

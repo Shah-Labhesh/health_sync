@@ -27,7 +27,6 @@ public class Qualifications {
     private String qualification;
     private String institute;
     private LocalDateTime passOutYear;
-    @Lob
     private byte[] certificate;
 
 

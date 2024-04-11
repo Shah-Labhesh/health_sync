@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.sql.Blob;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,7 +47,6 @@ public class Users {
     private boolean textNotification;
     private String khaltiId;
     private Boolean approved = false;
-    @Lob
     private byte[] profilePicture;
     private LocalDateTime createdAt;
     private Boolean isVerified;

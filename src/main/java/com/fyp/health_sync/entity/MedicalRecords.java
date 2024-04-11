@@ -25,7 +25,6 @@ public class MedicalRecords {
     @Column(updatable = false, nullable = false)
     private UUID id;
     private String recordType;
-    @Lob
     private byte[] record;
     private String medicalRecordType;
     private boolean selfAdded;
@@ -33,11 +32,11 @@ public class MedicalRecords {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "\"user\"", referencedColumnName = "id")
     private Users user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
     private Users doctor;
 

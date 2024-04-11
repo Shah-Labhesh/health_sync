@@ -16,12 +16,7 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 @OpenAPIDefinition
-@SecurityScheme(
-		name = "BearerAuth",
-		type = SecuritySchemeType.HTTP,
-		scheme = "bearer",
-		bearerFormat = "JWT"
-)
+@SecurityScheme(name = "BearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
 
 public class HealthSyncApplication {
 
@@ -30,12 +25,11 @@ public class HealthSyncApplication {
 		System.out.println("Health Sync Application Started");
 		LocalDateTime localDateTime = LocalDateTime.now();
 		ZoneId zoneId = ZoneId.of("Asia/Kathmandu"); // Kathmandu is GMT+5:45
-        ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
-        LocalDateTime localDateTimeWithTimeZone = zonedDateTime.toLocalDateTime();
+		ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
+		LocalDateTime localDateTimeWithTimeZone = zonedDateTime.toLocalDateTime();
 
-        System.out.println("LocalDateTime with timezone: " + localDateTimeWithTimeZone);
+		System.out.println("LocalDateTime with timezone: " + localDateTimeWithTimeZone);
 	}
-
 
 	@Bean
 	public OpenAPI customOpenAPI() {
@@ -46,7 +40,5 @@ public class HealthSyncApplication {
 
 		return new OpenAPI().info(info);
 	}
-
-
 
 }

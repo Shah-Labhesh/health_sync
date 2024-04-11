@@ -352,11 +352,12 @@ public class AppointmentService {
 
     @Scheduled(fixedRate = 60000)
     public void printSystemTime() {
-        LocalDateTime localDateTime = LocalDateTime.now();
-        ZoneId zoneId = ZoneId.of("Asia/Kathmandu"); // Kathmandu is GMT+5:45
-        ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
+        ZoneId zoneId = ZoneId.of("GMT+05:30"); // Kathmandu is GMT+5:45
+        ZonedDateTime localDateTime = LocalDateTime.now().atZone(zoneId);
+        // ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
         System.out.println("LocalDateTime: " + localDateTime);
-        LocalDateTime localDateTimeWithTimeZone = zonedDateTime.toLocalDateTime();
+        LocalDateTime localDateTimeWithTimeZone = localDateTime.toLocalDateTime();
+        
 
         System.out.println("LocalDateTime with timezone: " + localDateTimeWithTimeZone);
     }

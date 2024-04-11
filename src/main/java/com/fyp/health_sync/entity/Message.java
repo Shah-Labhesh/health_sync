@@ -25,7 +25,6 @@ public class Message {
     @Column(updatable = false, nullable = false)
     private UUID id;
     private String message;
-    @Lob
     private byte[] file;
     private UUID senderId;
     private UUID receiverId;
@@ -33,7 +32,7 @@ public class Message {
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "chatRoom", referencedColumnName = "id")
     private ChatRoom chatRoom;
 }
