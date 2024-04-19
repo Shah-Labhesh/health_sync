@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -111,9 +110,7 @@ public class AppointmentService {
                     pushNotificationService.sendNotification("New Appointment", "You have a new appointment with " + appointments.getUser().getName(), token.getToken());
                 }
             }
-            catch (Exception e){
-                System.out.println(e.getMessage());
-            }
+            catch (Exception ignored){}
             return ResponseEntity.created(null).body(appointments);
 
         } catch (BadRequestException ex) {
@@ -320,53 +317,54 @@ public class AppointmentService {
 
     // schedule appointment auto expire
     @Scheduled(fixedRate = 60000)
-    public void scheduleAppointmentExpire() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
-        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_EndTimeIsBefore(LocalDateTime.now().atZone(zoneId).toLocalDateTime());
+    public void scheduleAppointmentExpire() throws BadRequestException, InternalServerErrorException {
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_EndTimeIsBefore(LocalDateTime.now());
         for (Appointments appointment : appointments) {
             appointment.setIsExpired(true);
             appointmentRepo.save(appointment);
-            notificationService.sendNotification(appointment.getId(), "Your appointment with Dr. " + appointment.getDoctor().getName() + " is expired", NotificationType.APPOINTMENT, appointment.getUser().getId());
+            notificationService.sendNotification(appointment.getId(),
+                    "Your appointment with Dr. " + appointment.getDoctor().getName() + " is expired",
+                    NotificationType.APPOINTMENT, appointment.getUser().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
-                pushNotificationService.sendNotification("Appointment Expired", "Your appointment with Dr. " + appointment.getDoctor().getName() + " is expired", token.getToken());
+                pushNotificationService.sendNotification("Appointment Expired",
+                        "Your appointment with Dr. " + appointment.getDoctor().getName() + " is expired",
+                        token.getToken());
             }
         }
     }
 
     // reminder notification for appointment
     @Scheduled(fixedRate = 60000)
-    public void scheduleAppointmentReminder() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
+    public void scheduleAppointmentReminder() throws BadRequestException, InternalServerErrorException {
         List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndReminderTimeIsBefore(LocalDateTime.now().atZone(zoneId).toLocalDateTime());
         for (Appointments appointment : appointments) {
             appointment.setReminderTime(null);
             appointmentRepo.save(appointment);
-            notificationService.sendNotification(appointment.getId(), "You have appointment with Dr. " + appointment.getDoctor().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getUser().getId());
-            notificationService.sendNotification(appointment.getId(), "You have appointment with " + appointment.getUser().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), NotificationType.APPOINTMENT, appointment.getDoctor().getId());
+            notificationService.sendNotification(appointment.getId(),
+                    "You have appointment with Dr. " + appointment.getDoctor().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()),
+                    NotificationType.APPOINTMENT, appointment.getUser().getId());
+            notificationService.sendNotification(appointment.getId(),
+                    "You have appointment with " + appointment.getUser().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()),
+                    NotificationType.APPOINTMENT, appointment.getDoctor().getId());
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
-                pushNotificationService.sendNotification("Appointment Reminder", "You have appointment with Dr. " + appointment.getDoctor().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), token.getToken());
+                pushNotificationService.sendNotification("Appointment Reminder",
+                        "You have appointment with Dr. " + appointment.getDoctor().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()),
+                        token.getToken());
             }
             for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getDoctor())) {
-                pushNotificationService.sendNotification("Appointment Reminder", "You have appointment with " + appointment.getUser().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()), token.getToken());
+                pushNotificationService.sendNotification("Appointment Reminder",
+                        "You have appointment with " + appointment.getUser().getName() + " at " + convertTimeToString(appointment.getSlot().getSlotDateTime()),
+                        token.getToken());
             }
         }
     }
 
-    @Scheduled(fixedRate = 60000)
-    public void printSystemTime() {
-        ZoneId zoneId = ZoneId.of("GMT+05:30"); // Kathmandu is GMT+5:45
-        ZonedDateTime localDateTime = LocalDateTime.now().atZone(zoneId);
-        // ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
-        System.out.println("LocalDateTime: " + localDateTime);
-        LocalDateTime localDateTimeWithTimeZone = localDateTime.toLocalDateTime();
-        
-
-        System.out.println("LocalDateTime with timezone: " + localDateTimeWithTimeZone);
-    }
 
     // delete appointment if slot is before 3 hours of current time and payment is pending
     @Scheduled(fixedRate = 60000)
     @Transactional
-    public void scheduleAppointmentDelete() throws BadRequestException, InternalServerErrorException, FirebaseMessagingException {
-        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime.now().atZone(zoneId).toLocalDateTime().minusHours(3));
+    public void scheduleAppointmentDelete() throws BadRequestException, InternalServerErrorException {
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime.now().minusHours(3));
         for (Appointments appointment : appointments) {
             if (appointment.getCreatedAt().isEqual(appointment.getCreatedAt().plusMinutes(5))){
                 continue;
@@ -375,13 +373,23 @@ public class AppointmentService {
                 appointment.getSlot().setIsBooked(false);
                 slotRepo.save(appointment.getSlot());
                appointmentRepo.delete(appointment);
-                notificationService.sendNotification(appointment.getId(), "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", NotificationType.APPOINTMENT, appointment.getUser().getId());
+                notificationService.sendNotification(appointment.getId(),
+                        "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled",
+                        NotificationType.APPOINTMENT,
+                        appointment.getUser().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getUser())) {
-                    pushNotificationService.sendNotification("Appointment Cancelled", "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled", token.getToken());
+                    pushNotificationService.sendNotification("Appointment Cancelled",
+                            "Your appointment with Dr. " + appointment.getDoctor().getName() + " is cancelled",
+                            token.getToken());
                 }
-                notificationService.sendNotification(appointment.getId(), "Your appointment with " + appointment.getUser().getName() + " is cancelled", NotificationType.APPOINTMENT, appointment.getDoctor().getId());
+                notificationService.sendNotification(appointment.getId(),
+                        "Your appointment with " + appointment.getUser().getName() + " is cancelled",
+                        NotificationType.APPOINTMENT,
+                        appointment.getDoctor().getId());
                 for (FirebaseToken token : firebaseTokenRepo.findAllByUser(appointment.getDoctor())) {
-                    pushNotificationService.sendNotification("Appointment Cancelled", "Your appointment with " + appointment.getUser().getName() + " is cancelled", token.getToken());
+                    pushNotificationService.sendNotification("Appointment Cancelled",
+                            "Your appointment with " + appointment.getUser().getName() + " is cancelled",
+                            token.getToken());
                 }
             }
         }

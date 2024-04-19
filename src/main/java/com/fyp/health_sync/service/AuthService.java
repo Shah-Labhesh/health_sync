@@ -25,6 +25,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -394,5 +395,6 @@ public class AuthService implements UserDetailsService {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
+
 
 }

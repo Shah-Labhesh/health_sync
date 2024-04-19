@@ -47,18 +47,13 @@ public class SlotService {
                 throw new BadRequestException("You are not approved yet");
             }
 
-
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
             LocalDateTime dateTime = LocalDateTime.parse(slot.getSlotDateTime(), formatter);
             Integer existingSlots = slotRepo.findOverlappingSlots(doctor.getId(), dateTime, dateTime.plusMinutes(30));
 
-
-            // query for cannot create slot if the new slot is within 1 hour of the existing slot : pending
             if (existingSlots > 0) {
-                System.out.println("existingSlots = " + existingSlots);
                 throw new BadRequestException("You already have a slot at this time");
             }
-
 
             Slots slots = Slots.builder()
                     .slotDateTime(dateTime)
@@ -100,7 +95,6 @@ public class SlotService {
 
             if (slot.getSlotDateTime() != null) {
                 Integer existingSlots = slotRepo.findOverlappingSlots(doctor.getId(), slot.getSlotDateTime(), slot.getSlotDateTime().plusMinutes(30));
-                // query for cannot create slot if the new slot is within 1 hour of the existing slot : pending
                 if (existingSlots > 0) {
                     System.out.println("existingSlots = " + existingSlots);
                     throw new BadRequestException("You already have a slot at this time");

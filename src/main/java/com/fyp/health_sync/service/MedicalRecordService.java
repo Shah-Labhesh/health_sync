@@ -336,7 +336,7 @@ public class MedicalRecordService {
             notificationService.sendNotification(shareMedicalRecords.getId(),
                     "Dr. " + doctor.getName() + " requested permission to view your medical record",
                     NotificationType.SHARE_RECORD, userId);
-            for (FirebaseToken token : firebaseTokenRepo.findAllByUser(doctor)) {
+            for (FirebaseToken token : firebaseTokenRepo.findAllByUser(user)) {
                 pushNotificationService.sendNotification("New Medical Record",
                         "Dr. " + doctor.getName() + " requested permission to view your medical record",
                         token.getToken());
@@ -369,7 +369,7 @@ public class MedicalRecordService {
             }
 
             if (value) {
-                records.get().setAccepted(value);
+                records.get().setAccepted(true);
                 records.get().setRejected(false);
                 records.get().setExpired(false);
                 shareRecordRepo.save(records.get());

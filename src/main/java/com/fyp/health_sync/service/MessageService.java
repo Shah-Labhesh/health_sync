@@ -63,7 +63,7 @@ public class MessageService {
         }
     }
 
-    public MessageResponse createMessage(UUID roomId, String message, String token)
+    public MessageResponse createMessage(UUID roomId, String messageType, String token, String message, byte[] file)
             throws BadRequestException, InternalServerErrorException {
         String email = jwtHelper.getUsernameFromToken(token);
         Users users = userRepo.findByEmail(email);
@@ -79,8 +79,9 @@ public class MessageService {
         Message newMessage = Message.builder()
                 .chatRoom(chatRoom)
                 .createdAt(LocalDateTime.now())
-                .messageType(MessageType.TEXT)
+                .messageType(messageType.equals("IMAGE") ? MessageType.IMAGE : MessageType.TEXT)
                 .message(message)
+                .file(file)
                 .senderId(users.getId())
                 .receiverId(receiver.getId())
                 .build();

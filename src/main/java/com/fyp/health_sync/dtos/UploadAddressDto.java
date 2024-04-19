@@ -18,4 +18,6 @@ public class UploadAddressDto {
     @DecimalMin(value = "0.0", inclusive = false, message = "longitude must be greater than 0.0")
     private double longitude;
 
+
+
    }

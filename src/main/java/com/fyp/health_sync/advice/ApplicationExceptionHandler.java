@@ -7,7 +7,6 @@ import com.fyp.health_sync.exception.UserNotFoundException;
 import com.fyp.health_sync.utils.ErrorResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -110,13 +109,27 @@ public class ApplicationExceptionHandler {
         return errorResponse;
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(SizeLimitExceededException.class)
-    public ResponseEntity<?> handleSizeExceedException(SizeLimitExceededException exc) throws BadRequestException {
-       throw new BadRequestException("File too large!");
+    public ErrorResponse handleSizeExceedException(SizeLimitExceededException exc) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(400);
+        errorResponse.setError("Bad Request");
+        List<String> message = new ArrayList<>();
+        message.add("File size must not exceed 10MB");
+        errorResponse.setMessage(message);
+        return errorResponse;
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<?> handleMaxSizeException(MaxUploadSizeExceededException exc) throws BadRequestException {
-       throw new BadRequestException("File too large!");
+    public ErrorResponse handleMaxSizeException(MaxUploadSizeExceededException exc) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(400);
+        errorResponse.setError("Bad Request");
+        List<String> message = new ArrayList<>();
+        message.add("File size must not exceed 10MB");
+        errorResponse.setMessage(message);
+        return errorResponse;
     }
 }

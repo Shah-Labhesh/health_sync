@@ -1,17 +1,12 @@
 package com.fyp.health_sync.service;
 
-import com.fyp.health_sync.entity.DataRemovalRequest;
-import com.fyp.health_sync.entity.MedicalRecords;
-import com.fyp.health_sync.entity.Prescriptions;
-import com.fyp.health_sync.entity.Users;
+import com.fyp.health_sync.entity.*;
+import com.fyp.health_sync.enums.NotificationType;
 import com.fyp.health_sync.enums.UserRole;
 import com.fyp.health_sync.enums.UserStatus;
 import com.fyp.health_sync.exception.BadRequestException;
 import com.fyp.health_sync.exception.InternalServerErrorException;
-import com.fyp.health_sync.repository.DataRemovalRequestRepo;
-import com.fyp.health_sync.repository.MedicalRecordRepo;
-import com.fyp.health_sync.repository.PrescriptionRepo;
-import com.fyp.health_sync.repository.UserRepo;
+import com.fyp.health_sync.repository.*;
 import com.fyp.health_sync.utils.DoctorResponse;
 import com.fyp.health_sync.utils.RemovalRequestResponse;
 import com.fyp.health_sync.utils.SuccessResponse;
@@ -19,9 +14,9 @@ import com.fyp.health_sync.utils.UserResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
+// import org.springframework.data.domain.PageRequest;
+// import org.springframework.data.domain.Pageable;
+// import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +32,9 @@ public class AdminService {
     private final MedicalRecordRepo medicalRecordRepo;
     private final PrescriptionRepo prescriptionRepo;
     private final MailService mailService;
+    private final NotificationService notificationService;
+    private final FirebaseTokenRepo firebaseTokenRepo;
+    private final PushNotificationService pushNotificationService;
 
 //    public ResponseEntity<?> getAllUsers(Integer pageNumber, Integer pageSize) throws InternalServerErrorException {
 //        try {
@@ -73,7 +71,14 @@ public class AdminService {
 
             doctor.setApproved(true);
             userRepo.save(doctor);
-
+            notificationService.sendNotification(doctor.getId(),
+                    "Your account has been approved by the admin. You can now start using the app",
+                    NotificationType.REVIEW, doctor.getId());
+            for (FirebaseToken token : firebaseTokenRepo.findAllByUser(doctor)) {
+                pushNotificationService.sendNotification("Account Approved",
+                        "Your account has been approved by the admin. You can now start using the app",
+                        token.getToken());
+            }
             return ResponseEntity.ok(new SuccessResponse("Approval Status updated successfully"));
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());
@@ -114,8 +119,8 @@ public class AdminService {
         try {
             Users user = userRepo.findById(id).orElseThrow(() -> new BadRequestException("User not found"));
 
-            if (user.getStatus() == UserStatus.DELETED) {
-                throw new BadRequestException("User already deleted");
+            if (user.getStatus() ==status) {
+                throw new BadRequestException("User already " + status.toString().toLowerCase());
             }
             if (status == UserStatus.DELETED) {
                 user.setDeletedAt(LocalDateTime.now());
@@ -177,7 +182,7 @@ public class AdminService {
     }
 
     // getAllSoftDeletedUsers
-    private List<UserResponse> getUsersByStatus(UserStatus status) throws InternalServerErrorException {
+    public List<UserResponse> getUsersByStatus(UserStatus status) throws InternalServerErrorException {
         try {
             List<Users> users = userRepo.findAllByStatusAndRole(status, UserRole.USER);
             List<UserResponse> response = new ArrayList<>();

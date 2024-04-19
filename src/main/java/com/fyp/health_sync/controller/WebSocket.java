@@ -13,7 +13,10 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,13 +35,27 @@ public class WebSocket {
     }
 
     @MessageMapping("/message")
-    public void processMessage(@Payload Map<String, String> payload) throws BadRequestException, InternalServerErrorException, ForbiddenException {
-        UUID roomId = UUID.fromString(payload.get("roomId"));
-        String message = payload.get("message");
-        String token = payload.get("token");
-        messageService.createMessage(roomId, message,token);
-        List<MessageResponse> messages = messageService.getRoomMessages(roomId,token);
-        messagingTemplate.convertAndSend("/topic/"+roomId, messages);
+    public void processMessage(@ModelAttribute @Payload Map<String, Object> payload) throws BadRequestException, InternalServerErrorException, ForbiddenException {
+        UUID roomId = UUID.fromString((String) payload.get("roomId"));
+        String token = (String) payload.get("token");
+        String messageType = (String) payload.get("messageType");
+        System.out.println("messageType: " + messageType);
+        System.out.println("payload: " + payload);
+        if (messageType.equals("IMAGE")) {
+            if (payload.containsKey("file") && payload.get("file") instanceof String) {
+                String base64Image = (String) payload.get("file");
+                byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+                messageService.createMessage(roomId, messageType, token, "", imageBytes);
+            }
+        }
+        else {
+            String message = (String) payload.get("message");
+            messageService.createMessage(roomId, messageType, token, message, null);
+        }
+        
+        List<MessageResponse> messages = messageService.getRoomMessages(roomId, token);
+        messagingTemplate.convertAndSend("/topic/" + roomId, messages);
+   
     }
 
     @MessageMapping("/get-messages")

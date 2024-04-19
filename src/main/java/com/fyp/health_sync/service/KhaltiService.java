@@ -63,8 +63,7 @@ public class KhaltiService {
     private final PushNotificationService pushNotificationService;
     private final FirebaseTokenRepo firebaseTokenRepo;
 
-    public ResponseEntity<?> initiateTransaction(KhaltiRequestDto khaltiRequest)
-            throws ForbiddenException, BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> initiateTransaction(KhaltiRequestDto khaltiRequest) throws ForbiddenException, BadRequestException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -76,8 +75,7 @@ public class KhaltiService {
                 throw new ForbiddenException("Only users can make payments");
             }
 
-            Appointments appointment = appointmentRepo.findById(khaltiRequest.getProduct_identity())
-                    .orElseThrow(() -> new BadRequestException("Appointment not found"));
+            Appointments appointment = appointmentRepo.findById(khaltiRequest.getProduct_identity()).orElseThrow(() -> new BadRequestException("Appointment not found"));
             if (appointment.getPaymentStatus() == PaymentStatus.SUCCESS) {
                 throw new BadRequestException("Payment already made for this appointment");
             }
@@ -99,10 +97,7 @@ public class KhaltiService {
             }
             String jsonResponse = objectMapper.writeValueAsString(response);
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-
             mapResponse.put("khalti_token", jsonNode.get("token").asText());
-            
-
             return ResponseEntity.created(null).body(mapResponse);
         } 
         catch (ForbiddenException e) {
@@ -114,8 +109,7 @@ public class KhaltiService {
         }
     }
 
-    public ResponseEntity<?> confirmTransaction(ConfirmRequestDto confirmKhaltiRequest)
-            throws ForbiddenException, BadRequestException, InternalServerErrorException {
+    public ResponseEntity<?> confirmTransaction(ConfirmRequestDto confirmKhaltiRequest) throws ForbiddenException, BadRequestException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users user = userRepo.findByEmail(email);
@@ -127,8 +121,7 @@ public class KhaltiService {
                 throw new ForbiddenException("Only users can make payments");
             }
 
-            Appointments appointment = appointmentRepo.findById(confirmKhaltiRequest.getAppointmentId())
-                    .orElseThrow(() -> new BadRequestException("Appointment not found"));
+            Appointments appointment = appointmentRepo.findById(confirmKhaltiRequest.getAppointmentId()).orElseThrow(() -> new BadRequestException("Appointment not found"));
             if ( paymentRepo.findByAppointment(appointment) != null){
                 throw new BadRequestException("Payment already made for this appointment");
             }
@@ -142,7 +135,6 @@ public class KhaltiService {
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
             JsonNode token = jsonNode.get("token");
             JsonNode amount = jsonNode.get("amount");
-
             String idx = verifyTransaction(token.asText());
 
             if (idx == null){

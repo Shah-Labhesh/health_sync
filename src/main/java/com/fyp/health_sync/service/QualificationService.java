@@ -126,8 +126,7 @@ public class QualificationService {
         }
     }
 
-    public ResponseEntity<?> updateQualification(UUID qualificationId, UpdateQualificationDto qualification)
-            throws BadRequestException, ForbiddenException, IOException, InternalServerErrorException {
+    public ResponseEntity<?> updateQualification(UUID qualificationId, UpdateQualificationDto qualification) throws BadRequestException, ForbiddenException,  InternalServerErrorException {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String email = auth.getName();

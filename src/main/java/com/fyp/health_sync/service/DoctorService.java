@@ -207,7 +207,6 @@ public class DoctorService {
                 }
             }
 
-
             return ResponseEntity.ok(response);
         } catch (BadRequestException e) {
             throw new BadRequestException(e.getMessage());

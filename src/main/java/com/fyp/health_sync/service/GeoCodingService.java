@@ -25,6 +25,7 @@ public class GeoCodingService {
 
         // Make an HTTP GET request to the API
         String jsonResponse = restTemplate.getForObject(apiUrl, String.class);
+        System.out.println(jsonResponse);
         return parseAddressFromJson(jsonResponse);
     }
 

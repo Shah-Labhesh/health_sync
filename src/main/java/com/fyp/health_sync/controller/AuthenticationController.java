@@ -10,6 +10,9 @@ import com.fyp.health_sync.service.FirebaseAuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -82,6 +85,7 @@ public class AuthenticationController {
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword) throws BadRequestException, InternalServerErrorException {
         return authService.resetPassword(resetPassword);
     }
+
 
 
 }

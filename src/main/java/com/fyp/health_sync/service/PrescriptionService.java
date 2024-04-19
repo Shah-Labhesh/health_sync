@@ -41,8 +41,7 @@ public class PrescriptionService {
     private final PushNotificationService pushNotificationService;
     private final FirebaseTokenRepo firebaseTokenRepo;
 
-    public ResponseEntity<?> savePrescription(UploadPrescriptionDto prescription)
-            throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public ResponseEntity<?> savePrescription(UploadPrescriptionDto prescription) throws BadRequestException, ForbiddenException, InternalServerErrorException {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Users doctor = userRepo.findByEmail(email);
@@ -52,13 +51,11 @@ public class PrescriptionService {
             if (doctor.getRole() != UserRole.DOCTOR) {
                 throw new ForbiddenException("You are not authorized to upload prescription");
             }
-            Users user = userRepo.findById(prescription.getUserId())
-                    .orElseThrow(() -> new BadRequestException("User not found"));
+            Users user = userRepo.findById(prescription.getUserId()).orElseThrow(() -> new BadRequestException("User not found"));
             if (user.getRole() != UserRole.USER) {
                 throw new BadRequestException("User is not a patient");
             }
-            if (prescription.getRecordType().equals(RecordType.IMAGE.name())
-                    || prescription.getRecordType().equals(RecordType.PDF.name())) {
+            if (prescription.getRecordType().equals(RecordType.IMAGE.name()) || prescription.getRecordType().equals(RecordType.PDF.name())) {
                 if (prescription.getPrescription() == null) {
                     throw new BadRequestException("Prescription must not be empty");
                 }

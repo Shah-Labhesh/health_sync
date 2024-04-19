@@ -36,7 +36,7 @@ import java.util.UUID;
 @Service
 public class UserService {
 
-    private final GeoCodingService geoCodingService;
+    
     private final SpecialityRepo specialityRepo;
     private final UserRepo userRepo;
     private final FirebaseTokenRepo firebaseTokenRepo;
@@ -78,8 +78,6 @@ public class UserService {
                 throw new BadRequestException("Address already uploaded");
             }
 
-            doctor.setAddress(
-                    geoCodingService.getAddressFromCoordinates(address.getLatitude(), address.getLongitude()));
             doctor.setLatitude(address.getLatitude());
             doctor.setLongitude(address.getLongitude());
             userRepo.save(doctor);
@@ -183,8 +181,6 @@ public class UserService {
                 if (updateUserDto.getLatitude() > 0 || updateUserDto.getLongitude() > 0) {
                     user.setLatitude(updateUserDto.getLatitude());
                     user.setLongitude(updateUserDto.getLongitude());
-                    user.setAddress(geoCodingService.getAddressFromCoordinates(updateUserDto.getLatitude(),
-                            updateUserDto.getLongitude()));
                 }
                 if (updateUserDto.getExperience() != null) {
                     user.setExperience(updateUserDto.getExperience());
