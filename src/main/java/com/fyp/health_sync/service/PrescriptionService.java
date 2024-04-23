@@ -246,7 +246,7 @@ public class PrescriptionService {
                 notificationService.sendNotification(permission.getId(),
                         user.getName() + " has accepted your request to view prescription",
                         NotificationType.PRESCRIPTION_PERMISSION, permission.getDoctor().getId());
-                for (FirebaseToken token : firebaseTokenRepo.findAllByUser(permission.getUser())) {
+                for (FirebaseToken token : firebaseTokenRepo.findAllByUser(permission.getDoctor())) {
                     pushNotificationService.sendNotification("Prescription Request",
                             user.getName() + " has accepted your request to view prescription", token.getToken());
                 }
@@ -254,7 +254,7 @@ public class PrescriptionService {
                 notificationService.sendNotification(permission.getId(),
                         user.getName() + " has rejected your request to view prescription",
                         NotificationType.PRESCRIPTION_PERMISSION, permission.getDoctor().getId());
-                for (FirebaseToken token : firebaseTokenRepo.findAllByUser(permission.getUser())) {
+                for (FirebaseToken token : firebaseTokenRepo.findAllByUser(permission.getDoctor())) {
                     pushNotificationService.sendNotification("Prescription Request",
                             user.getName() + " has rejected your request to view prescription", token.getToken());
                 }

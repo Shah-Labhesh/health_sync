@@ -22,7 +22,7 @@ public class AddDoctorDetailsDto {
     @Size(min = 10, max = 250, message = "Experience must be between 10 and 250 digits")
     private String experience;
     @NotNull(message = "Fee cannot be empty")
-    @Min(value = 100, message = "Fee must be greater than 0")
+    @Min(value = 100, message = "Fee must be greater than 100")
     private Integer fee;
     @NotNull(message = "Image cannot be empty")
     private MultipartFile image;
