@@ -249,8 +249,6 @@ public class UserService {
             }
             firebaseTokenRepo.delete(firebaseToken);
             return ResponseEntity.ok().body(new SuccessResponse("Token deleted successfully"));
-        } catch (BadRequestException ex) {
-            throw new BadRequestException(ex.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
