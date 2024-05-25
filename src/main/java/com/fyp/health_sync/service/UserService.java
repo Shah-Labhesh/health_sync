@@ -245,7 +245,7 @@ public class UserService {
         try {
             FirebaseToken firebaseToken = firebaseTokenRepo.findByToken(token);
             if (firebaseToken == null) {
-                throw new BadRequestException("Token not found");
+                return ResponseEntity.ok().body(new SuccessResponse("Token deleted successfully"));
             }
             firebaseTokenRepo.delete(firebaseToken);
             return ResponseEntity.ok().body(new SuccessResponse("Token deleted successfully"));
