@@ -181,7 +181,7 @@ public class DoctorService {
             List<RatingReviews> list = new ArrayList<>();
             List<RatingResponse> response = new ArrayList<>();
 
-            for (RatingReviews rating : ratingRepo.findAllByDoctorAndRatingType(doctor, RatingType.DOCTOR)
+            for (RatingReviews rating : ratingRepo.findAllByDoctorAndRatingTypeAndUserIsNotNull(doctor, RatingType.DOCTOR)
             ) {
                 list.add(rating);
             }
