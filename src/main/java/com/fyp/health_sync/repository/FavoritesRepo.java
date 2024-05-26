@@ -13,5 +13,5 @@ public interface FavoritesRepo extends JpaRepository<Favorites, UUID> {
 
     Favorites findByDoctorAndUser(Users doctor, Users user);
 
-    List<Favorites> findAllByUser(Users user);
+    List<Favorites> findAllByUserAndDoctorIsNotNull(Users user);
 }

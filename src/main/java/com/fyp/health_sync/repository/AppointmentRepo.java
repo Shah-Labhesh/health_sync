@@ -18,9 +18,9 @@ public interface AppointmentRepo extends JpaRepository<Appointments, UUID> {
 
    List<Appointments> findAllByUser(Users user);
 
-    List<Appointments> findAllByIsExpiredFalseAndSlot_EndTimeIsBefore(LocalDateTime now);
+    List<Appointments> findAllByIsExpiredFalseAndSlot_EndTimeIsBeforeAndDoctorIsNotNull(LocalDateTime now);
 
-    List<Appointments> findAllByIsExpiredFalseAndReminderTimeIsBefore(LocalDateTime now);
+    List<Appointments> findAllByIsExpiredFalseAndReminderTimeIsBeforeAndDoctorIsNotNull(LocalDateTime now);
 
-    List<Appointments> findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime localDateTime);
+    List<Appointments> findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBeforeAndDoctorIsNotNull(LocalDateTime localDateTime);
 }

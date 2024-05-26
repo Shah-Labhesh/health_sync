@@ -221,7 +221,7 @@ public class UserService {
             if (user == null) {
                 throw new BadRequestException("User not found");
             }
-            FirebaseToken firebaseToken = firebaseTokenRepo.findByToken(token);
+            FirebaseToken firebaseToken = firebaseTokenRepo.findByTokenAndUserIsNotNull(token);
             if (firebaseToken == null) {
                 firebaseToken = FirebaseToken.builder()
                         .token(token)
@@ -243,7 +243,7 @@ public class UserService {
     public ResponseEntity<?> deleteFirebaseToken(String token)
             throws BadRequestException, InternalServerErrorException {
         try {
-            FirebaseToken firebaseToken = firebaseTokenRepo.findByToken(token);
+            FirebaseToken firebaseToken = firebaseTokenRepo.findByTokenAndUserIsNotNull(token);
             if (firebaseToken == null) {
                 return ResponseEntity.ok().body(new SuccessResponse("Token deleted successfully"));
             }

@@ -102,7 +102,7 @@ public class DoctorService {
             if (user.getRole() != UserRole.USER) {
                 throw new ForbiddenException("You are not authorized to get favorites");
             }
-            List<Favorites> favorites = favoritesRepo.findAllByUser(user);
+            List<Favorites> favorites = favoritesRepo.findAllByUserAndDoctorIsNotNull(user);
             List<DoctorResponse> responses = new ArrayList<>();
             for (Favorites favorite : favorites
             ) {

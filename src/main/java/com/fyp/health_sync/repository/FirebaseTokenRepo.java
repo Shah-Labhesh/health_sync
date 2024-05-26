@@ -8,6 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface FirebaseTokenRepo extends JpaRepository<FirebaseToken, UUID> {
-    FirebaseToken findByToken(String token);
+    FirebaseToken findByTokenAndUserIsNotNull(String token);
     List<FirebaseToken> findAllByUser(Users user);
 }

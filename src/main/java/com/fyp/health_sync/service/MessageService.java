@@ -114,7 +114,7 @@ public class MessageService {
                 throw new BadRequestException("User not found");
             }
             List<ChatRoomResponse> response = new ArrayList<>();
-            for (ChatRoom chatRoom : chatRoomRepo.findAllByUserOrDoctor(users, users)) {
+            for (ChatRoom chatRoom : chatRoomRepo.findAllByUserOrDoctorAndUserIsNotNullAndDoctorIsNotNull(users, users)) {
                 response.add(new ChatRoomResponse().castToResponse(chatRoom));
             }
 
@@ -151,7 +151,7 @@ public class MessageService {
             if (users == null) {
                 throw new BadRequestException("User not found");
             }
-            ChatRoom chatRoom = chatRoomRepo.findByIdAndAndDeletedAtNull(roomId);
+            ChatRoom chatRoom = chatRoomRepo.findByIdAndAndDeletedAtNullAndUserIsNotNullAndDoctorIsNotNull(roomId);
             if (chatRoom == null) {
                 throw new BadRequestException("Chat Room already deleted");
             }
@@ -202,7 +202,7 @@ public class MessageService {
         if (users == null) {
             throw new BadRequestException("User not found");
         }
-        ChatRoom chatRoom = chatRoomRepo.findByIdAndAndDeletedAtNull(roomId);
+        ChatRoom chatRoom = chatRoomRepo.findByIdAndAndDeletedAtNullAndUserIsNotNullAndDoctorIsNotNull(roomId);
         if (chatRoom == null) {
             throw new BadRequestException("Chat Room already deleted");
         }

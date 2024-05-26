@@ -318,7 +318,7 @@ public class AppointmentService {
     // schedule appointment auto expire
     @Scheduled(fixedRate = 60000)
     public void scheduleAppointmentExpire() throws BadRequestException, InternalServerErrorException {
-        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_EndTimeIsBefore(LocalDateTime.now());
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_EndTimeIsBeforeAndDoctorIsNotNull(LocalDateTime.now());
         for (Appointments appointment : appointments) {
             appointment.setIsExpired(true);
             appointmentRepo.save(appointment);
@@ -336,7 +336,7 @@ public class AppointmentService {
     // reminder notification for appointment
     @Scheduled(fixedRate = 60000)
     public void scheduleAppointmentReminder() throws BadRequestException, InternalServerErrorException {
-        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndReminderTimeIsBefore(LocalDateTime.now().atZone(zoneId).toLocalDateTime());
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndReminderTimeIsBeforeAndDoctorIsNotNull(LocalDateTime.now().atZone(zoneId).toLocalDateTime());
         for (Appointments appointment : appointments) {
             appointment.setReminderTime(null);
             appointmentRepo.save(appointment);
@@ -364,7 +364,7 @@ public class AppointmentService {
     @Scheduled(fixedRate = 60000)
     @Transactional
     public void scheduleAppointmentDelete() throws BadRequestException, InternalServerErrorException {
-        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBefore(LocalDateTime.now().minusHours(3));
+        List<Appointments> appointments = appointmentRepo.findAllByIsExpiredFalseAndSlot_SlotDateTimeIsBeforeAndDoctorIsNotNull(LocalDateTime.now().minusHours(3));
         for (Appointments appointment : appointments) {
             if (appointment.getCreatedAt().isEqual(appointment.getCreatedAt().plusMinutes(5))){
                 continue;

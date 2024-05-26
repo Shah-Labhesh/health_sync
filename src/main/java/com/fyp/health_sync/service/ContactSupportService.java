@@ -66,8 +66,8 @@ public class ContactSupportService {
             }
             Map<String, Object> response = new HashMap<>();
             response.put("totalMessage", contactSupportResponses.size() );
-            response.put("pendingResponse", contactSupportRepo.countAllByResponseMessageIsNull() );
-            response.put("totalResponse", contactSupportRepo.countAllByResponseMessageNotNull() );
+            response.put("pendingResponse", contactSupportRepo.countAllByResponseMessageIsNullAndUserIsNotNull() );
+            response.put("totalResponse", contactSupportRepo.countAllByResponseMessageNotNullAndUserIsNotNull() );
             response.put("contactSupport", contactSupportResponses);
             return ResponseEntity.ok(response);
         } catch (BadRequestException e) {

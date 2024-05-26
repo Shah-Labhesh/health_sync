@@ -282,7 +282,7 @@ public class PrescriptionService {
             }
             if (user.getRole() == UserRole.DOCTOR) {
                 List<PrescriptionPermissionResponse> permissions = new ArrayList<>();
-                for (ViewPrescriptionPermission permission : viewPPRepo.findAllByDoctor(user)) {
+                for (ViewPrescriptionPermission permission : viewPPRepo.findAllByDoctorAndUserIsNotNull(user)) {
                     permissions.add(new PrescriptionPermissionResponse().castToResponse(permission));
                 }
                 ;
@@ -290,7 +290,7 @@ public class PrescriptionService {
             } else if (user.getRole() == UserRole.USER) {
 
                 List<PrescriptionPermissionResponse> permissions = new ArrayList<>();
-                for (ViewPrescriptionPermission permission : viewPPRepo.findAllByUser(user)) {
+                for (ViewPrescriptionPermission permission : viewPPRepo.findAllByUserAndDoctorIsNotNull(user)) {
                     permissions.add(new PrescriptionPermissionResponse().castToResponse(permission));
                 }
                 ;

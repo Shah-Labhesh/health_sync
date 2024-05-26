@@ -17,6 +17,6 @@ public interface DataRemovalRequestRepo extends JpaRepository<DataRemovalRequest
 
     List<DataRemovalRequest> findAllByUser(Users user);
 
-    @Query("SELECT COUNT(d) FROM DataRemovalRequest d WHERE d.isAccepted = false AND d.isRejected = false")
+    @Query("SELECT COUNT(d) FROM DataRemovalRequest d WHERE d.isAccepted = false AND d.isRejected = false AND d.user is NOT NULL ")
     Integer countAllByAcceptedIsFalseAndRejectedIsFalse();
 }

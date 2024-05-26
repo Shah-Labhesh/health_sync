@@ -36,9 +36,9 @@ public class PaymentService {
         List<Payment> payments = new ArrayList<>();
         List<PaymentResponse> paymentResponses = new ArrayList<>();
         if (user.getRole() == UserRole.DOCTOR) {
-            payments = paymentRepo.findAllByDoctor(user);
+            payments = paymentRepo.findAllByDoctorAndUserIsNotNull(user);
         } else if (user.getRole() == UserRole.USER) {
-            payments = paymentRepo.findAllByUser(user);
+            payments = paymentRepo.findAllByUserAndDoctorIsNotNull(user);
         }else{
             throw new ForbiddenException("You are not authorized to view payments");
         }

@@ -14,7 +14,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, UUID> {
 
     ChatRoom findByUserIdAndDoctorIdAndDeletedAtNull(UUID user_id, UUID doctor_id);
 
-    List<ChatRoom> findAllByUserOrDoctor(Users users, Users users1);
+    List<ChatRoom> findAllByUserOrDoctorAndUserIsNotNullAndDoctorIsNotNull(Users users, Users users1);
 
-    ChatRoom findByIdAndAndDeletedAtNull(UUID id);
+    ChatRoom findByIdAndAndDeletedAtNullAndUserIsNotNullAndDoctorIsNotNull(UUID id);
 }

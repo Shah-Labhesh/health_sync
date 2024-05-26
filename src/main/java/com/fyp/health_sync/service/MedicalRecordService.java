@@ -457,7 +457,7 @@ public class MedicalRecordService {
             if (user.getRole() != UserRole.USER) {
                 throw new ForbiddenException("You are not authorized to view requests");
             }
-            List<ShareMedicalRecords> records = shareRecordRepo.findByUser(user);
+            List<ShareMedicalRecords> records = shareRecordRepo.findByUserAndDoctorIsNotNull(user);
             List<SharedRecordResponse> recordResponses = new ArrayList<>();
             for (ShareMedicalRecords record : records) {
                 recordResponses.add(new SharedRecordResponse().castToResponse(record));

@@ -9,8 +9,8 @@ import java.util.UUID;
 @Repository
 public interface ContactSupportRepo extends JpaRepository<ContactSupport, UUID> {
 
-    Integer countAllByResponseMessageNotNull();
+    Integer countAllByResponseMessageNotNullAndUserIsNotNull();
 
-    Integer countAllByResponseMessageIsNull();
+    Integer countAllByResponseMessageIsNullAndUserIsNotNull();
 
 }

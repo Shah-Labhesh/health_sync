@@ -15,9 +15,9 @@ public interface ViewPrescriptionPermissionRepo extends JpaRepository<ViewPrescr
 
     List<ViewPrescriptionPermission> findByDoctorAndUser(Users doctor, Users user);
 
-    List<ViewPrescriptionPermission> findAllByDoctor(Users doctor);
+    List<ViewPrescriptionPermission> findAllByDoctorAndUserIsNotNull(Users doctor);
 
-    List<ViewPrescriptionPermission> findAllByUser(Users user);
+    List<ViewPrescriptionPermission> findAllByUserAndDoctorIsNotNull(Users user);
 
     @Query("SELECT v FROM ViewPrescriptionPermission v WHERE v.doctor = ?1 AND v.user = ?2 AND v.isAccepted = ?3 AND v.isExpired = ?4")
     ViewPrescriptionPermission findByDoctorAndUserAndAcceptedAndExpired(Users doctor, Users user, boolean b,

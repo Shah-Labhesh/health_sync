@@ -12,8 +12,8 @@ import java.util.UUID;
 
 @Repository
 public interface PaymentRepo extends JpaRepository<Payment, UUID> {
-    List<Payment> findAllByDoctor(Users user);
-    List<Payment> findAllByUser(Users user);
+    List<Payment> findAllByDoctorAndUserIsNotNull(Users user);
+    List<Payment> findAllByUserAndDoctorIsNotNull(Users user);
 
     @Query("SELECT SUM(p.amount) FROM Payment p where p.transactionId is not null")
     Integer countTotalAmount();

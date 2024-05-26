@@ -12,7 +12,7 @@ import java.util.UUID;
 @Repository
 public interface ShareRecordRepo extends JpaRepository<ShareMedicalRecords, UUID> {
 
-    List<ShareMedicalRecords> findByUser(Users user);
+    List<ShareMedicalRecords> findByUserAndDoctorIsNotNull(Users user);
 
     List<ShareMedicalRecords> findByDoctor(Users doctor);
 
