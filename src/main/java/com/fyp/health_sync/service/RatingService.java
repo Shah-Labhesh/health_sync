@@ -93,14 +93,14 @@ public class RatingService {
             if (ratingType1 == RatingType.DOCTOR) {
                 Users user = userRepo.findById(targetId)
                         .orElseThrow(() -> new BadRequestException("User not found"));
-                for (RatingReviews rating : ratingRepo.findAllByDoctorAndRatingType(user, ratingType1)) {
+                for (RatingReviews rating : ratingRepo.findAllByDoctorAndRatingTypeAndUserIsNotNull(user, ratingType1)) {
                     response.add(new RatingResponse().castToResponse(rating));
                 }
                 return ResponseEntity.ok(response);
             }else {
                 Users user = userRepo.findById(targetId)
                         .orElseThrow(() -> new BadRequestException("User not found"));
-                for (RatingReviews rating : ratingRepo.findAllByUserAndRatingType(user, ratingType1)) {
+                for (RatingReviews rating : ratingRepo.findAllByUserAndRatingTypeAndUserIsNotNull(user, ratingType1)) {
                     response.add(new RatingResponse().castToResponse(rating));
                 }
                 return ResponseEntity.ok(response);
